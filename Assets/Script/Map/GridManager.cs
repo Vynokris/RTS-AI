@@ -8,6 +8,7 @@ using Random = UnityEngine.Random;
 public class GridManager : MonoBehaviour
 {
     [SerializeField] private Grid grid;
+    [SerializeField] private GameObject golem;
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private GameObject treePrefab;
 
@@ -41,6 +42,7 @@ public class GridManager : MonoBehaviour
     void Start()
     {
         BuildMap();
+        Instantiate(golem, grid.GetCellCenterWorld(new Vector3Int(0, 0)), Quaternion.identity);
     }
     
     void SpawnMeshFromColorGradient(MeshFilter meshFilter, Color color)
