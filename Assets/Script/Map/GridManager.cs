@@ -42,38 +42,48 @@ public class GridManager : MonoBehaviour
     {
         BuildMap();
     }
-
+    
     void SpawnMeshFromColorGradient(MeshFilter meshFilter, Color color)
     {
-        if (color.Equals(Color.blue))
+        if (color.Equals(Color.blue)) // water
         {
             meshFilter.mesh = water;
+
+            meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.WATER);
         }
 
-        else if (color.Equals(new Color(1, 1, 0)))
+        else if (color.Equals(new Color(1, 1, 0))) // sand
         {
             int selectedMeshIndex = Random.Range(0, sand.Count);
             meshFilter.mesh = sand[selectedMeshIndex * Random.Range(0, 2) * Random.Range(0, 2)];
+
+            meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.SAND);
         }
 
-        else if (color.Equals(Color.green))
+        else if (color.Equals(Color.green)) // grass
         {
             meshFilter.mesh = grass;
             int treeSpawn = Random.Range(0, 101);
 
             if (treeSpawn <= treeSpawnChance)
             {
-                Instantiate(treePrefab, meshFilter.gameObject.transform).transform.position += 
-                    new Vector3(Random.Range(-0.2f, 0.2f), 0.2f, Random.Range(-0.2f, 0.2f));
+                GameObject tree = Instantiate(treePrefab, meshFilter.gameObject.transform);
+
+                tree.transform.position += new Vector3(Random.Range(-0.2f, 0.2f), 0.2f, Random.Range(-0.2f, 0.2f));
+                tree.transform.rotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
                 
-                meshFilter.gameObject.GetComponent<Tile>().SetHasTree(true);
+                Tile tile = meshFilter.gameObject.GetComponent<Tile>();
+                tile.SetHasTree(true);
+                tile.SetTileType(TileType.GRASS);
             }
         }
 
-        else if (color.Equals(Color.black))
+        else if (color.Equals(Color.black)) // stone
         {
             int selectedMeshIndex = Random.Range(0, stone.Count);
             meshFilter.mesh = stone[selectedMeshIndex * Random.Range(0, 2) * Random.Range(0, 2)];
+
+            meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.STONE);
         }
     }
 
@@ -97,7 +107,8 @@ public class GridManager : MonoBehaviour
             for (int j = 0; j < mapSize.x; j++)
             {
                 var worldPos = grid.GetCellCenterWorld(new Vector3Int(j, i));
-                GameObject tileObj = Instantiate(tilePrefab, worldPos, Quaternion.identity, transform);
+                GameObject tileObj = 
+                    Instantiate(tilePrefab, worldPos, Quaternion.AngleAxis(60 * Random.Range(0, 6), Vector3.up), transform);
 
                 float totalSample = 0f;
                 float frequency = 1f;
