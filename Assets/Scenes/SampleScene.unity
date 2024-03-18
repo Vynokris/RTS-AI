@@ -198,12 +198,13 @@ MonoBehaviour:
     m_NumColorKeys: 5
     m_NumAlphaKeys: 2
   autoUpdate: 0
+  update: 0
   mapSize: {x: 50, y: 50}
   offset: {x: 0, y: 0}
   seed: 0
   octaves: 3
   perlinZoom: 14
-  perlinHeight: 3
+  perlinHeight: 1.2
   treeSpawnChance: 26
 --- !u!156049354 &263500968
 Grid:

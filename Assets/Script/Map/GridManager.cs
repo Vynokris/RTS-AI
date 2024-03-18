@@ -21,6 +21,7 @@ public class GridManager : MonoBehaviour
 
     [Header("Map Generation")] 
     public bool autoUpdate = false;
+    public bool update = false;
 
     [SerializeField] private Vector2 mapSize;
     [SerializeField] private Vector2 offset;
@@ -148,7 +149,14 @@ public class GridManager : MonoBehaviour
 
     void Update()
     {
-        if (autoUpdate)
+        if (update)
+        {
+            update = false;
+            DestroyMap();
+            BuildMap();
+        }
+
+        else if (autoUpdate)
         {
             timeSpent += Time.deltaTime;
             if (timeSpent > timer)
