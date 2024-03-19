@@ -1,53 +1,77 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Tile : MonoBehaviour
 {
-    [SerializeField] private bool hasTree; //Does this tile has a decorative tree on it
-
-    [SerializeField] private TileType tileType = TileType.GRASS;
-
+    public TileType     type               { get; private set; } = TileType.Grass;
+    public PropType     propType           { get; private set; } = PropType.None;
+    public ResourceType resourceType       { get; private set; } = ResourceType.None;
+    public bool         harvestingResource { get; private set; } = false;
+    public GameObject   propObject     { get; private set; }
+    public GameObject   resourceObject { get; private set; }
     public float noiseHeight = 0.0f;
-
-    // Start is called before the first frame update
-    void Start()
+    
+    private MeshFilter meshFilter;
+    
+    public void FindMeshFilter()
     {
-        
+        meshFilter = GetComponent<MeshFilter>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetType(TileType _tileType, Mesh tileMesh)
     {
-        
+        type = _tileType;
+        meshFilter.mesh = tileMesh;
+        if (type == TileType.Water)
+            gameObject.layer = LayerMask.NameToLayer("MapTileBlocking");
     }
 
-    public bool GetHasTree()
+    public void SetProp(GameObject _propObject, Mesh propMesh)
     {
-        return hasTree;
+        propType = type == TileType.Sand ? PropType.Breakable : PropType.Unbreakable;
+        propObject = _propObject;
+        propObject.GetComponent<MeshFilter>().mesh = propMesh;
+        if (propType == PropType.Unbreakable)
+            gameObject.layer = LayerMask.NameToLayer("MapTileBlocking");
     }
 
-    public void SetHasTree(bool value)
+    public void SetResource(ResourceType _resourceType, GameObject _resourceObject, Mesh resourceMesh)
     {
-        hasTree = value;
+        resourceType = _resourceType;
+        resourceObject = _resourceObject;
+        resourceObject.GetComponent<MeshFilter>().mesh = resourceMesh;
     }
 
-    public TileType SetTileType()
+    public void SetHarvestingResource(bool _harvestingResource, Mesh resourceMesh)
     {
-        return tileType;
-    }
-
-    public void SetTileType(TileType type)
-    {
-        tileType = type;
+        harvestingResource = _harvestingResource;
+        resourceObject.GetComponent<MeshFilter>().mesh = resourceMesh;
     }
 }
 
 public enum TileType
 {
-    GRASS,
-    SAND,
-    WATER,
-    STONE
+    Water,
+    Sand,
+    Grass,
+    Stone,
+}
+
+public enum PropType
+{
+    None,
+    Breakable,
+    Unbreakable,
+}
+
+public enum ResourceType
+{
+    None,
+    Lumber,
+    Stone,
+    Crops,
 }
 

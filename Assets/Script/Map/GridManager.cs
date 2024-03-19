@@ -1,88 +1,131 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class GridManager : MonoBehaviour
 {
+    [SerializeField] private NavMeshSurface navMesh;
     [SerializeField] private Grid grid;
     [SerializeField] private GameObject tilePrefab;
-    [SerializeField] private GameObject treePrefab;
+    [SerializeField] private GameObject propPrefab;
+    [SerializeField] private GameObject resourcePrefab;
 
     [Header("Meshes")]
-    [SerializeField] private List<Mesh> stone;
-    [SerializeField] private Mesh grass;
-    [SerializeField] private List<Mesh> sand;
-    [SerializeField] private Mesh water;
-
     [SerializeField] private Gradient thresholds;
+    [SerializeField] private Mesh waterTile;
+    [SerializeField] private Mesh sandTile;
+    [SerializeField] private Mesh grassTile;
+    [SerializeField] private Mesh stoneTile;
+    [SerializeField] private List<Mesh> waterProps;
+    [SerializeField] private List<Mesh> sandProps;
+    [SerializeField] private List<Mesh> grassProps;
+    [SerializeField] private List<Mesh> stoneProps;
+    [SerializeField] private Mesh lumberResource;
+    [SerializeField] private Mesh stoneResource;
+    [SerializeField] private Mesh lumberHarvesting;
+    [SerializeField] private Mesh stoneHarvesting;
+    [SerializeField] private Mesh cropHarvesting;
 
     [Header("Map Generation")] 
-    public bool autoUpdate = false;
-    public bool update = false;
-
+    [SerializeField] private bool autoUpdate = false;
+    [SerializeField] private bool update = false;
     [SerializeField] private Vector2 mapSize;
     [SerializeField] private Vector2 offset;
     [SerializeField] private int seed = 0;
     [SerializeField] private int octaves = 3;
     [SerializeField] private float perlinZoom = 14.0f;
     [SerializeField] private float perlinHeight = 2.0f;
-    [Range(0, 100)]
-    [SerializeField] private int treeSpawnChance = 1;
-
-    private List<Tile> tiles = new List<Tile>();
+    [Range(0, 100)] [SerializeField] private int resourceSpawnChance = 1;
+    [Range(0, 100)] [SerializeField] private int propSpawnChance = 1;
+    
+    private List<Tile> tiles = new();
 
     private float timer = 0.1f;
     private float timeSpent = 0.0f;
 
-    // Start is called before the first frame update
     void Start()
     {
         BuildMap();
     }
-    
-    void SpawnMeshFromColorGradient(MeshFilter meshFilter, Color color)
+
+    private Mesh GetTileMesh(TileType tileType)
     {
-        if (color.Equals(Color.blue)) // water
+        return tileType switch
         {
-            meshFilter.mesh = water;
-
-            meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.WATER);
-
-            LevelWater(meshFilter);
-        }
-
-        else if (color.Equals(new Color(1, 1, 0))) // sand
-        {
-            int selectedMeshIndex = Random.Range(0, sand.Count);
-            meshFilter.mesh = sand[selectedMeshIndex * Random.Range(0, 2) * Random.Range(0, 2)];
-
-            meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.SAND);
-        }
-
-        else if (color.Equals(Color.green)) // grass
-        {
-            meshFilter.mesh = grass;
-            int treeSpawn = Random.Range(0, 101);
-
-            if (treeSpawn <= treeSpawnChance)
-            {
-                SpawnTree(meshFilter);
-            }
-        }
-
-        else if (color.Equals(Color.black)) // stone
-        {
-            int selectedMeshIndex = Random.Range(0, stone.Count);
-            meshFilter.mesh = stone[selectedMeshIndex * Random.Range(0, 2) * Random.Range(0, 2)];
-
-            meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.STONE);
-        }
+            TileType.Water => waterTile,
+            TileType.Sand  => sandTile,
+            TileType.Grass => grassTile,
+            TileType.Stone => stoneTile,
+            _ => null
+        };
     }
 
-    void BuildMap()
+    private List<Mesh> GetPropMeshes(TileType tileType)
+    {
+        return tileType switch
+        {
+            TileType.Water => waterProps,
+            TileType.Sand  => sandProps,
+            TileType.Grass => grassProps,
+            TileType.Stone => stoneProps,
+            _ => null
+        };
+    }
+
+    private Mesh GetResourceMesh(ResourceType resourceType, bool harvesting)
+    {
+        return !harvesting ? resourceType switch
+        {
+            ResourceType.Lumber => lumberResource,
+            ResourceType.Stone  => stoneResource,
+            ResourceType.Crops  => null,
+            _ => null
+        }
+            : resourceType switch
+        {
+            ResourceType.Lumber => lumberHarvesting,
+            ResourceType.Stone  => stoneHarvesting,
+            ResourceType.Crops  => cropHarvesting,
+            _ => null
+        };
+    }
+
+    private bool SetTileProp(Tile tile)
+    {
+        List<Mesh> propMeshes = GetPropMeshes(tile.type);
+        if (propMeshes is null || propMeshes.Count <= 0) return false;
+        
+        bool spawnProp = Random.Range(0, 100) < propSpawnChance;
+        if (!spawnProp) return false;
+        
+        int random = Random.Range(0, propMeshes.Count);
+        tile.SetProp(Instantiate(propPrefab, tile.gameObject.transform), propMeshes[random]);
+        return true;
+    }
+
+    private bool SetTileResource(Tile tile)
+    {
+        if (tile.type == TileType.Water || tile.type == TileType.Sand) return false;
+        
+        bool spawnResource = Random.Range(0, 100) < resourceSpawnChance;
+        if (!spawnResource) return false;
+        
+        ResourceType resourceType = tile.type switch
+        {
+            TileType.Grass => Random.Range(0, 3) == 0 ? ResourceType.Stone : ResourceType.Lumber,
+            TileType.Stone => ResourceType.Stone,
+            _ => ResourceType.None,
+        };
+        tile.SetResource(resourceType, Instantiate(propPrefab, tile.gameObject.transform), GetResourceMesh(resourceType, false));
+        return true;
+    }
+
+    public void BuildMap()
     {
         System.Random prng = new System.Random(seed);
         Vector2[] octaveOffsets = new Vector2[octaves];
@@ -102,8 +145,7 @@ public class GridManager : MonoBehaviour
             for (int j = 0; j < mapSize.x; j++)
             {
                 var worldPos = grid.GetCellCenterWorld(new Vector3Int(j, i));
-                GameObject tileObj = 
-                    Instantiate(tilePrefab, worldPos, Quaternion.AngleAxis(60 * Random.Range(0, 6), Vector3.up), transform);
+                GameObject tileObj = Instantiate(tilePrefab, worldPos, Quaternion.AngleAxis(60 * Random.Range(0, 6), Vector3.up), transform);
 
                 float totalSample = 0f;
                 float frequency = 1f;
@@ -128,6 +170,7 @@ public class GridManager : MonoBehaviour
 
                 Tile tile = tileObj.GetComponent<Tile>();
                 tile.noiseHeight = totalSample;
+                tile.FindMeshFilter();
                 tiles.Add(tile);
             }
         }
@@ -135,39 +178,28 @@ public class GridManager : MonoBehaviour
         foreach (var tile in tiles)
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
-
-            tile.transform.position +=
-                new Vector3(0, finalSample * perlinHeight, 0);
-            var color = thresholds.Evaluate(finalSample);
-            SpawnMeshFromColorGradient(tile.gameObject.GetComponent<MeshFilter>(), color);
+            tile.transform.position += new Vector3(0, finalSample * perlinHeight, 0);
+            Color color = thresholds.Evaluate(finalSample);
+            TileType tileType = (TileType)Math.Clamp(Array.FindIndex(thresholds.colorKeys, element => element.color == color), 0, 100);
+            tile.SetType(tileType, GetTileMesh(tileType));
+            if (!SetTileResource(tile))
+                SetTileProp(tile);
         }
+        
+        navMesh.BuildNavMesh();
     }
 
-    void DestroyMap()
+    public void DestroyMap()
     {
-        for (int i = 0; i < grid.transform.childCount; i++)
-        {
-            Destroy(grid.transform.GetChild(i).gameObject);
+        Action<int> destroyChild = (i) => { Destroy(grid.transform.GetChild(i).gameObject); };
+        if (Application.isEditor)
+            destroyChild = (i) => { DestroyImmediate(grid.transform.GetChild(i).gameObject); };
+            
+        for (int i = grid.transform.childCount-1; i >= 0; i--) {
+            destroyChild(i);
         }
-
         tiles.Clear();
-    }
-
-    void LevelWater(MeshFilter parentTileMeshFilter)
-    {
-        parentTileMeshFilter.transform.position += new Vector3(0, -parentTileMeshFilter.transform.position.y + 0.2f, 0);
-    }
-
-    void SpawnTree(MeshFilter parentTileMeshFilter)
-    {
-        GameObject tree = Instantiate(treePrefab, parentTileMeshFilter.gameObject.transform);
-
-        tree.transform.position += new Vector3(Random.Range(-0.2f, 0.2f), 0.2f, Random.Range(-0.2f, 0.2f));
-        tree.transform.rotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
-
-        Tile tile = parentTileMeshFilter.gameObject.GetComponent<Tile>();
-        tile.SetHasTree(true);
-        tile.SetTileType(TileType.GRASS);
+        navMesh.RemoveData();
     }
 
     void Update()
@@ -177,9 +209,10 @@ public class GridManager : MonoBehaviour
             update = false;
             DestroyMap();
             BuildMap();
+            return;
         }
 
-        else if (autoUpdate)
+        if (autoUpdate)
         {
             timeSpent += Time.deltaTime;
             if (timeSpent > timer)
@@ -188,6 +221,7 @@ public class GridManager : MonoBehaviour
                 DestroyMap();
                 BuildMap();
             }
+            return;
         }
     }
 } 
