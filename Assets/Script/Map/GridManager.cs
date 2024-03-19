@@ -89,7 +89,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void BuildMap()
+    public void BuildMap()
     {
         System.Random prng = new System.Random(seed);
         Vector2[] octaveOffsets = new Vector2[octaves];
@@ -143,20 +143,21 @@ public class GridManager : MonoBehaviour
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
 
-            tile.transform.position +=
-                new Vector3(0, finalSample * perlinHeight, 0);
+            tile.transform.position += new Vector3(0, finalSample * perlinHeight, 0);
             var color = thresholds.Evaluate(finalSample);
             SpawnMeshFromColorGradient(tile.gameObject.GetComponent<MeshFilter>(), color);
         }
     }
 
-    void DestroyMap()
+    public void DestroyMap()
     {
-        for (int i = 0; i < grid.transform.childCount; i++)
-        {
-            Destroy(grid.transform.GetChild(i).gameObject);
+        Action<int> destroyChild = (i) => { Destroy(grid.transform.GetChild(i).gameObject); };
+        if (Application.isEditor)
+            destroyChild = (i) => { DestroyImmediate(grid.transform.GetChild(i).gameObject); };
+            
+        for (int i = grid.transform.childCount-1; i >= 0; i--) {
+            destroyChild(i);
         }
-
         tiles.Clear();
     }
 
