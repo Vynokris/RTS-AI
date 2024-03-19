@@ -8,7 +8,6 @@ using Random = UnityEngine.Random;
 public class GridManager : MonoBehaviour
 {
     [SerializeField] private Grid grid;
-    [SerializeField] private GameObject golem;
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private GameObject treePrefab;
 
@@ -42,7 +41,6 @@ public class GridManager : MonoBehaviour
     void Start()
     {
         BuildMap();
-        Instantiate(golem, grid.GetCellCenterWorld(new Vector3Int(0, 0)), Quaternion.identity);
     }
     
     void SpawnMeshFromColorGradient(MeshFilter meshFilter, Color color)
@@ -52,6 +50,8 @@ public class GridManager : MonoBehaviour
             meshFilter.mesh = water;
 
             meshFilter.gameObject.GetComponent<Tile>().SetTileType(TileType.WATER);
+
+            LevelWater(meshFilter);
         }
 
         else if (color.Equals(new Color(1, 1, 0))) // sand
@@ -69,14 +69,7 @@ public class GridManager : MonoBehaviour
 
             if (treeSpawn <= treeSpawnChance)
             {
-                GameObject tree = Instantiate(treePrefab, meshFilter.gameObject.transform);
-
-                tree.transform.position += new Vector3(Random.Range(-0.2f, 0.2f), 0.2f, Random.Range(-0.2f, 0.2f));
-                tree.transform.rotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
-                
-                Tile tile = meshFilter.gameObject.GetComponent<Tile>();
-                tile.SetHasTree(true);
-                tile.SetTileType(TileType.GRASS);
+                SpawnTree(meshFilter);
             }
         }
 
@@ -158,6 +151,23 @@ public class GridManager : MonoBehaviour
         }
 
         tiles.Clear();
+    }
+
+    void LevelWater(MeshFilter parentTileMeshFilter)
+    {
+        parentTileMeshFilter.transform.position += new Vector3(0, -parentTileMeshFilter.transform.position.y + 0.2f, 0);
+    }
+
+    void SpawnTree(MeshFilter parentTileMeshFilter)
+    {
+        GameObject tree = Instantiate(treePrefab, parentTileMeshFilter.gameObject.transform);
+
+        tree.transform.position += new Vector3(Random.Range(-0.2f, 0.2f), 0.2f, Random.Range(-0.2f, 0.2f));
+        tree.transform.rotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
+
+        Tile tile = parentTileMeshFilter.gameObject.GetComponent<Tile>();
+        tile.SetHasTree(true);
+        tile.SetTileType(TileType.GRASS);
     }
 
     void Update()
