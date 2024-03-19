@@ -5,17 +5,10 @@ using UnityEditor;
 [CanEditMultipleObjects]
 public class GridManagerEditor : Editor
 {
-    
-    void OnEnable()
-    {
-        Debug.Log("Hello there!");
-    }
-
     public override void OnInspectorGUI()
     {
-        base.OnInspectorGUI();
-        
         GridManager gridManager = (GridManager)target;
+        
         if (GUILayout.Button("Generate"))
         {
             gridManager.DestroyMap();
@@ -26,5 +19,8 @@ public class GridManagerEditor : Editor
         {
             gridManager.DestroyMap();
         }
+        
+        GUILayout.Space(15);
+        base.OnInspectorGUI();
     }
 }

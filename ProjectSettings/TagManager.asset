@@ -11,10 +11,10 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - MapTile
+  - MapTileBlocking
+  - MapProp
+  - MapResource
   - 
   - 
   - 
