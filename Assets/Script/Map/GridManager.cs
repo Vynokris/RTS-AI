@@ -48,11 +48,6 @@ public class GridManager : MonoBehaviour
     private float timer = 0.1f;
     private float timeSpent = 0.0f;
 
-    void Start()
-    {
-        BuildMap();
-    }
-
     private Mesh GetTileMesh(TileType tileType)
     {
         return tileType switch
@@ -104,24 +99,44 @@ public class GridManager : MonoBehaviour
         if (!spawnProp) return false;
         
         int random = Random.Range(0, propMeshes.Count);
-        tile.SetProp(Instantiate(propPrefab, tile.gameObject.transform), propMeshes[random]);
+
+        GameObject obj = Instantiate(propPrefab, tile.gameObject.transform.parent);
+
+        if (tile.type == TileType.Grass)
+        {
+            float treeOffset = Random.Range(-0.2f, 0.2f);
+            obj.transform.position += new Vector3(treeOffset, tile.GetTileHeight() + 0.2f, treeOffset);
+        }
+
+        else
+        {
+            obj.transform.position += new Vector3(0, tile.GetTileHeight(), 0);
+            obj.transform.localScale = new Vector3(100, 100, 100);
+        }
+
+        tile.SetProp(obj, propMeshes[random]);
         return true;
     }
 
     private bool SetTileResource(Tile tile)
     {
-        if (tile.type == TileType.Water || tile.type == TileType.Sand) return false;
+        if (tile.type is TileType.Water or TileType.Sand) return false;
         
         bool spawnResource = Random.Range(0, 100) < resourceSpawnChance;
         if (!spawnResource) return false;
-        
+
         ResourceType resourceType = tile.type switch
         {
             TileType.Grass => Random.Range(0, 3) == 0 ? ResourceType.Stone : ResourceType.Lumber,
             TileType.Stone => ResourceType.Stone,
             _ => ResourceType.None,
         };
-        tile.SetResource(resourceType, Instantiate(propPrefab, tile.gameObject.transform), GetResourceMesh(resourceType, false));
+
+        GameObject obj = Instantiate(propPrefab, tile.gameObject.transform.parent);
+        obj.transform.position += new Vector3(0, tile.GetTileHeight(), 0);
+        obj.transform.localScale = new Vector3(100, 100, 100);
+
+        tile.SetResource(resourceType, obj, GetResourceMesh(resourceType, false));
         return true;
     }
 
@@ -168,7 +183,7 @@ public class GridManager : MonoBehaviour
                 else if (totalSample < minNoiseHeight)
                     minNoiseHeight = totalSample;
 
-                Tile tile = tileObj.GetComponent<Tile>();
+                Tile tile = tileObj.GetComponentInChildren<Tile>();
                 tile.noiseHeight = totalSample;
                 tile.FindMeshFilter();
                 tiles.Add(tile);
@@ -178,10 +193,16 @@ public class GridManager : MonoBehaviour
         foreach (var tile in tiles)
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
-            tile.transform.position += new Vector3(0, finalSample * perlinHeight, 0);
+            float scaleFactor = finalSample * perlinHeight * 100;
+            tile.transform.localScale += new Vector3(0, scaleFactor, 0);
             Color color = thresholds.Evaluate(finalSample);
             TileType tileType = (TileType)Math.Clamp(Array.FindIndex(thresholds.colorKeys, element => element.color == color), 0, 100);
+            
+            if (tileType == TileType.Water)
+                LevelWater(tile);
+
             tile.SetType(tileType, GetTileMesh(tileType));
+
             if (!SetTileResource(tile))
                 SetTileProp(tile);
         }
@@ -223,5 +244,20 @@ public class GridManager : MonoBehaviour
             }
             return;
         }
+    }
+
+    void LevelWater(Tile tile)
+    {
+        tile.transform.localScale = new Vector3(100, 100 + 0.2f * perlinHeight * 100, 100);
+    }
+
+    public Vector2 GetMapSize()
+    {
+        return mapSize;
+    }
+
+    public List<Tile> GetTiles()
+    {
+        return tiles;
     }
 } 

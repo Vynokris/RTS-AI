@@ -31,7 +31,7 @@ public class Tile : MonoBehaviour
 
     public void SetProp(GameObject _propObject, Mesh propMesh)
     {
-        propType = type == TileType.Sand ? PropType.Breakable : PropType.Unbreakable;
+        propType = type is TileType.Sand or TileType.Grass ? PropType.Breakable : PropType.Unbreakable;
         propObject = _propObject;
         propObject.GetComponent<MeshFilter>().mesh = propMesh;
         if (propType == PropType.Unbreakable)
@@ -49,6 +49,13 @@ public class Tile : MonoBehaviour
     {
         harvestingResource = _harvestingResource;
         resourceObject.GetComponent<MeshFilter>().mesh = resourceMesh;
+    }
+
+    public float GetTileHeight()
+    {
+        return type == TileType.Water
+            ? (gameObject.transform.localScale.y / 100 * 0.1f) - 0.1f
+            : (gameObject.transform.localScale.y / 100 * 0.2f) - 0.2f;
     }
 }
 
