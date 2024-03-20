@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameMaster : MonoBehaviour
 {
-    [SerializeField] private GridManager gridManager;
+    [FormerlySerializedAs("gridManager")] [SerializeField] private MapGenerator mapGenerator;
 
     [SerializeField] private GameObject HQGameObject;
     [SerializeField] private int players = 2;
@@ -17,8 +18,8 @@ public class GameMaster : MonoBehaviour
     {
         playerSpawns = new List<Vector3>(players);
 
-        gridManager.DestroyMap();
-        gridManager.BuildMap();
+        mapGenerator.DestroyMap();
+        mapGenerator.BuildMap();
 
         SpawnPlayers();
     }
@@ -40,9 +41,9 @@ public class GameMaster : MonoBehaviour
 
     Vector3 ChooseSpawnLocation()
     {
-        var minDistance = gridManager.GetMapSize() / 4;
+        var minDistance = mapGenerator.GetMapSize() / 4;
 
-        List<Tile>tiles = gridManager.GetTiles();
+        List<Tile>tiles = mapGenerator.GetTiles();
 
         int randomIterator = Random.Range(0, tiles.Count);
 
@@ -73,7 +74,7 @@ public class GameMaster : MonoBehaviour
 
         for (int i = 0; i < randomIterator; i++)
         {
-            if (tiles[i].type == TileType.Grass && tiles[i].resourceType == ResourceType.None)
+            if (tiles[i].type == TileType.Grass &&  tiles[i].resourceType == ResourceType.None)
             {
                 for (int j = 0; j < playerSpawns.Count; j++)
                 {

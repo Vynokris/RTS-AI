@@ -7,29 +7,11 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-public class GridManager : MonoBehaviour
+public class MapGenerator : MonoBehaviour
 {
     [SerializeField] private NavMeshSurface navMesh;
     [SerializeField] private Grid grid;
     [SerializeField] private GameObject tilePrefab;
-    [SerializeField] private GameObject propPrefab;
-    [SerializeField] private GameObject resourcePrefab;
-
-    [Header("Meshes")]
-    [SerializeField] private Gradient thresholds;
-    [SerializeField] private Mesh waterTile;
-    [SerializeField] private Mesh sandTile;
-    [SerializeField] private Mesh grassTile;
-    [SerializeField] private Mesh stoneTile;
-    [SerializeField] private List<Mesh> waterProps;
-    [SerializeField] private List<Mesh> sandProps;
-    [SerializeField] private List<Mesh> grassProps;
-    [SerializeField] private List<Mesh> stoneProps;
-    [SerializeField] private Mesh lumberResource;
-    [SerializeField] private Mesh stoneResource;
-    [SerializeField] private Mesh lumberHarvesting;
-    [SerializeField] private Mesh stoneHarvesting;
-    [SerializeField] private Mesh cropHarvesting;
 
     [Header("Map Generation")] 
     [SerializeField] private bool autoUpdate = false;
@@ -40,108 +22,22 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int octaves = 3;
     [SerializeField] private float perlinZoom = 14.0f;
     [SerializeField] private float perlinHeight = 2.0f;
+    [SerializeField] private Gradient thresholds;
     [Range(0, 100)] [SerializeField] private int resourceSpawnChance = 1;
     [Range(0, 100)] [SerializeField] private int propSpawnChance = 1;
     
     private List<Tile> tiles = new();
-
     private float timer = 0.1f;
     private float timeSpent = 0.0f;
-
-    private Mesh GetTileMesh(TileType tileType)
-    {
-        return tileType switch
-        {
-            TileType.Water => waterTile,
-            TileType.Sand  => sandTile,
-            TileType.Grass => grassTile,
-            TileType.Stone => stoneTile,
-            _ => null
-        };
-    }
-
-    private List<Mesh> GetPropMeshes(TileType tileType)
-    {
-        return tileType switch
-        {
-            TileType.Water => waterProps,
-            TileType.Sand  => sandProps,
-            TileType.Grass => grassProps,
-            TileType.Stone => stoneProps,
-            _ => null
-        };
-    }
-
-    private Mesh GetResourceMesh(ResourceType resourceType, bool harvesting)
-    {
-        return !harvesting ? resourceType switch
-        {
-            ResourceType.Lumber => lumberResource,
-            ResourceType.Stone  => stoneResource,
-            ResourceType.Crops  => null,
-            _ => null
-        }
-            : resourceType switch
-        {
-            ResourceType.Lumber => lumberHarvesting,
-            ResourceType.Stone  => stoneHarvesting,
-            ResourceType.Crops  => cropHarvesting,
-            _ => null
-        };
-    }
-
-    private bool SetTileProp(Tile tile)
-    {
-        List<Mesh> propMeshes = GetPropMeshes(tile.type);
-        if (propMeshes is null || propMeshes.Count <= 0) return false;
-        
-        bool spawnProp = Random.Range(0, 100) < propSpawnChance;
-        if (!spawnProp) return false;
-        
-        int random = Random.Range(0, propMeshes.Count);
-
-        GameObject obj = Instantiate(propPrefab, tile.gameObject.transform.parent);
-
-        if (tile.type == TileType.Grass)
-        {
-            float treeOffset = Random.Range(-0.2f, 0.2f);
-            obj.transform.position += new Vector3(treeOffset, tile.GetTileHeight() + 0.2f, treeOffset);
-        }
-
-        else
-        {
-            obj.transform.position += new Vector3(0, tile.GetTileHeight(), 0);
-            obj.transform.localScale = new Vector3(100, 100, 100);
-        }
-
-        tile.SetProp(obj, propMeshes[random]);
-        return true;
-    }
-
-    private bool SetTileResource(Tile tile)
-    {
-        if (tile.type is TileType.Water or TileType.Sand) return false;
-        
-        bool spawnResource = Random.Range(0, 100) < resourceSpawnChance;
-        if (!spawnResource) return false;
-
-        ResourceType resourceType = tile.type switch
-        {
-            TileType.Grass => Random.Range(0, 3) == 0 ? ResourceType.Stone : ResourceType.Lumber,
-            TileType.Stone => ResourceType.Stone,
-            _ => ResourceType.None,
-        };
-
-        GameObject obj = Instantiate(propPrefab, tile.gameObject.transform.parent);
-        obj.transform.position += new Vector3(0, tile.GetTileHeight(), 0);
-        obj.transform.localScale = new Vector3(100, 100, 100);
-
-        tile.SetResource(resourceType, obj, GetResourceMesh(resourceType, false));
-        return true;
-    }
+    private MeshStorage meshStorage = null;
 
     public void BuildMap()
     {
+        if (meshStorage is null)
+        {
+            meshStorage = FindObjectOfType<MeshStorage>();
+        }
+        
         System.Random prng = new System.Random(seed);
         Vector2[] octaveOffsets = new Vector2[octaves];
 
@@ -201,7 +97,7 @@ public class GridManager : MonoBehaviour
             if (tileType == TileType.Water)
                 LevelWater(tile);
 
-            tile.SetType(tileType, GetTileMesh(tileType));
+            tile.SetType(tileType, meshStorage.GetTile(tileType));
 
             if (!SetTileResource(tile))
                 SetTileProp(tile);
@@ -246,9 +142,37 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    private bool SetTileProp(Tile tile)
+    {
+        List<Mesh> propMeshes = meshStorage.GetProps(tile.type);
+        if (propMeshes is null || propMeshes.Count <= 0) return false;
+        
+        bool spawnProp = Random.Range(0, 100) < propSpawnChance;
+        if (!spawnProp) return false;
+        
+        int random = Random.Range(0, propMeshes.Count);
+        return tile.SetProp(propMeshes[random]);
+    }
+
+    private bool SetTileResource(Tile tile)
+    {
+        bool spawnResource = Random.Range(0, 100) < resourceSpawnChance;
+        if (!spawnResource) return false;
+
+        ResourceType resourceType = tile.type switch
+        {
+            TileType.Grass => Random.Range(0, 3) == 0 ? ResourceType.Stone : ResourceType.Lumber,
+            TileType.Stone => ResourceType.Stone,
+            _ => ResourceType.None,
+        };
+        if (resourceType is ResourceType.None) return false;
+
+        return tile.SetResource(resourceType, meshStorage.GetResource(resourceType));
+    }
+
     void LevelWater(Tile tile)
     {
-        tile.transform.localScale = new Vector3(100, 100 + 0.2f * perlinHeight * 100, 100);
+        tile.transform.localScale = new Vector3(100, 100 + thresholds.colorKeys[(int)TileType.Water+1].time * perlinHeight * 100, 100);
     }
 
     public Vector2 GetMapSize()

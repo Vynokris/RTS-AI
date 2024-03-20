@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7167105952710004966
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3365593475651512836}
+  - component: {fileID: 6976974942162142306}
+  m_Layer: 0
+  m_Name: MeshStorage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3365593475651512836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7167105952710004966}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6976974942162142306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7167105952710004966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dedd79a08585d004eb74a47325143cf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileWater: {fileID: 1652284636832737525, guid: 6b23710dfe5c79e4c86e0953db069b26,
+    type: 3}
+  tileSand: {fileID: 4748098352286941247, guid: 8eb9d71eeae78bd4a97be77dd2a2de36,
+    type: 3}
+  tileGrass: {fileID: -3427785143845246577, guid: 165f8e122ecc653448ab539d9dbfbd87,
+    type: 3}
+  tileStone: {fileID: 5244473341094242312, guid: 5e95250a44354b949a09f786a95f3aa9,
+    type: 3}
+  propsWater:
+  - {fileID: 5796135843441505371, guid: be68113b3b3ef5f498bc8db9865b92a6, type: 3}
+  propsSand:
+  - {fileID: -830329412096147640, guid: e6bd553b846329f4a95bb47aff7b99c0, type: 3}
+  - {fileID: -2177547954217000241, guid: f49448e277a62234194a59075b77628e, type: 3}
+  propsGrass:
+  - {fileID: -7310622389815182823, guid: 359b5abfac9b7724d89d0b5f5cc5cb89, type: 3}
+  propsStone:
+  - {fileID: 8620279356042084136, guid: 6f0175af5451a2546af4ab9c31ecdb35, type: 3}
+  - {fileID: -7119250952012791202, guid: 6a660b1c34ad06e4fa1498d270bb5ea9, type: 3}
+  resourceLumber: {fileID: -1415100083512644639, guid: 5f9fac625ab24034592e63b0a3899ef6,
+    type: 3}
+  resourceStone: {fileID: 4353707366978820359, guid: 749fe20aae8ba77478ac28d8666f28c2,
+    type: 3}
+  buildingCastle: {fileID: 6669728641966097059, guid: b87730029219ba14e8bbfe5bb4013af2,
+    type: 3}
+  buildingFarm: {fileID: -2860251642858245215, guid: 56381489be2d70942b6296d5ed413c70,
+    type: 3}
+  buildingLumbermill: {fileID: 859331425371983721, guid: f9c35e10efe3a3c49932bf82019beeb8,
+    type: 3}
+  buildingMine: {fileID: -6364056426195290067, guid: de6b5aeaa6f310f4180cf79e861aa9e6,
+    type: 3}
+  buildingBarracks: {fileID: -3670341472962916104, guid: 10d1ef864d542464181ad544ffa00c07,
+    type: 3}

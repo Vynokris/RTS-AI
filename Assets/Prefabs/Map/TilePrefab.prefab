@@ -41,9 +41,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2882690165361792835}
+  - component: {fileID: 5820686959380142588}
   - component: {fileID: 8666569142456084336}
   - component: {fileID: 1705778624292038118}
-  - component: {fileID: 5820686959380142588}
   m_Layer: 6
   m_Name: Tile
   m_TagString: Untagged
@@ -66,6 +66,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5590065078386243415}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5820686959380142588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7239361998090971661}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e58b4beebd20b7f4db369b63b031e298, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noiseHeight: 0
+  propPrefab: {fileID: 1431532903868658292, guid: fa5c67c578e0787408f1e712934af5ed,
+    type: 3}
+  resourcePrefab: {fileID: 1431532903868658292, guid: d7b1ea9f47d09664c872de7bdadff138,
+    type: 3}
+  buildingPrefab: {fileID: 1431532903868658292, guid: 84450004f9be85748972056338b026ea,
+    type: 3}
 --- !u!33 &8666569142456084336
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -95,7 +114,6 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: f663ec01cd1791343a7fa2162cc414fa, type: 2}
-  - {fileID: 2100000, guid: b82d2fa8aee3db44b945290a6460f97b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -117,16 +135,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5820686959380142588
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7239361998090971661}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e58b4beebd20b7f4db369b63b031e298, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  noiseHeight: 0

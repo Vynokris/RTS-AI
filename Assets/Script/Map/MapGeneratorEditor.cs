@@ -1,23 +1,23 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(GridManager))]
+[CustomEditor(typeof(MapGenerator))]
 [CanEditMultipleObjects]
-public class GridManagerEditor : Editor
+public class MapGeneratorEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        GridManager gridManager = (GridManager)target;
+        MapGenerator mapGenerator = (MapGenerator)target;
         
         if (GUILayout.Button("Generate"))
         {
-            gridManager.DestroyMap();
-            gridManager.BuildMap();
+            mapGenerator.DestroyMap();
+            mapGenerator.BuildMap();
         }
 
         if (GUILayout.Button("Destroy"))
         {
-            gridManager.DestroyMap();
+            mapGenerator.DestroyMap();
         }
         
         GUILayout.Space(15);
