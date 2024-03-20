@@ -10,6 +10,7 @@ using UnityEngine;
     public int    crops  = 10;
     public int    lumber = 10;
     public int    stone  = 10;
+    public Tile       spawnTile  = null;
     public List<Tile> ownedTiles = new();
 }
 
@@ -22,17 +23,27 @@ public class FactionManager : MonoBehaviour
 
     private void Start()
     {
-        if (String.IsNullOrWhiteSpace(factions[0].name) &&
-            String.IsNullOrWhiteSpace(factions[1].name))
+        if (!CheckFaction(0) && !CheckFaction(1))
         {
             Debug.LogError("Not enough factions to start game.");
         }
+    }
+
+    public bool CheckFaction(int idx)
+    {
+        if (idx < 0 || idx > factions.Length) return false;
+        return !string.IsNullOrWhiteSpace(factions[idx].name);
     }
     
     public ref Faction GetFaction(int idx)
     {
         if (idx < 0 || idx > factions.Length) return ref factions[0];
         return ref factions[idx];
+    }
+
+    public Faction[] GetFactions()
+    {
+        return factions;
     }
 
     private void Update()

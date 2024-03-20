@@ -33,14 +33,13 @@ public class MapGenerator : MonoBehaviour
 
     public void BuildMap()
     {
-        if (meshStorage is null)
-        {
+        if (meshStorage is null) {
             meshStorage = FindObjectOfType<MeshStorage>();
         }
-        
         System.Random prng = new System.Random(seed);
+        
+        // Initialize perlin noise octaves.
         Vector2[] octaveOffsets = new Vector2[octaves];
-
         for (int i = 0; i < octaves; i++)
         {
             float offsetX = prng.Next(-100000, 100000) + offset.x;
@@ -48,9 +47,9 @@ public class MapGenerator : MonoBehaviour
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
         }
 
+        // Generate map elevation from perlin noise octaves and create tiles.
         float maxNoiseHeight = float.MinValue;
         float minNoiseHeight = float.MaxValue;
-
         for (int i = 0; i < mapSize.y; i++)
         {
             for (int j = 0; j < mapSize.x; j++)
@@ -87,6 +86,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
+        // Set tile height and create props/resources.
         foreach (var tile in tiles)
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
@@ -102,6 +102,41 @@ public class MapGenerator : MonoBehaviour
 
             if (!SetTileResource(tile))
                 SetTileProp(tile);
+        }
+        
+        // Set the spawn locations of all players.
+        float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
+        FactionManager factionManager = FindObjectOfType<FactionManager>();
+        Faction[] factions = factionManager.GetFactions();
+        for (int i = 0; i < factions.Length; i++)
+        {
+            if (!factionManager.CheckFaction(i))
+                break;
+            
+            Tile spawnTile = null;
+            while (spawnTile is null) // There is a universe where this is an infinite loop...
+            {
+                Vector2 coords = new Vector2(Random.Range(0, (int)mapSize.x), Random.Range(0, (int)mapSize.y));
+                Tile randTile = tiles[(int)(coords.y * mapSize.x + coords.x)];
+                
+                if (randTile.type is TileType.Grass &&
+                    randTile.resourceType is ResourceType.None &&
+                    randTile.propType is PropType.None or PropType.Breakable)
+                {
+                    bool isFarEnough = true;
+                    for (int j = 0; j < i; j++)
+                    {
+                        float distance = Vector2.Distance(randTile.transform.position, factions[j].spawnTile.transform.position);
+                        if (distance < minDistance) isFarEnough = false;
+                    }
+                    if (isFarEnough)
+                        spawnTile = randTile;
+                }
+            }
+            spawnTile.SetBuilding(BuildingType.Castle);
+            spawnTile.SetFaction(i);
+            factions[i].spawnTile = spawnTile;
+            factions[i].ownedTiles.Add(spawnTile);
         }
         
         navMesh.BuildNavMesh();

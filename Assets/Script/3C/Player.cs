@@ -1,17 +1,27 @@
+using System;
 using UnityEngine;
+
+[Serializable]
+public struct CursorParams
+{
+    public Texture2D texture;
+    public Vector2 hotspot;
+}
 
 public class Player : MonoBehaviour
 {
     private Camera cam;
     private FactionManager factionManager;
     
-    [SerializeField] private Texture2D cursorTexture;
+    [SerializeField] private CursorParams defaultCursor;
+    [SerializeField] private CursorParams buildCursor;
+    [SerializeField] private CursorParams attackCursor;
     
     void Start()
     {
         cam = Camera.main;
         factionManager = FindObjectOfType<FactionManager>();
-        Cursor.SetCursor(cursorTexture, new Vector2(5, 4), CursorMode.Auto);
+        Cursor.SetCursor(defaultCursor.texture, defaultCursor.hotspot, CursorMode.Auto);
     }
 
     void Update()
