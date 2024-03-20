@@ -10,7 +10,7 @@ using UnityEngine;
     public int    crops  = 10;
     public int    lumber = 10;
     public int    stone  = 10;
-    public List<Building> buildings = new();
+    public List<Tile> ownedTiles = new();
 }
 
 public class FactionManager : MonoBehaviour

@@ -82,6 +82,7 @@ public class MapGenerator : MonoBehaviour
                 Tile tile = tileObj.GetComponentInChildren<Tile>();
                 tile.noiseHeight = totalSample;
                 tile.FindMeshFilter();
+                tile.SetMeshStorage(meshStorage);
                 tiles.Add(tile);
             }
         }
@@ -97,7 +98,7 @@ public class MapGenerator : MonoBehaviour
             if (tileType == TileType.Water)
                 LevelWater(tile);
 
-            tile.SetType(tileType, meshStorage.GetTile(tileType));
+            tile.SetType(tileType);
 
             if (!SetTileResource(tile))
                 SetTileProp(tile);
@@ -167,7 +168,7 @@ public class MapGenerator : MonoBehaviour
         };
         if (resourceType is ResourceType.None) return false;
 
-        return tile.SetResource(resourceType, meshStorage.GetResource(resourceType));
+        return tile.SetResource(resourceType);
     }
 
     void LevelWater(Tile tile)
