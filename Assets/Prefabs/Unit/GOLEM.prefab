@@ -186,15 +186,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0481801eadacb1e40afd3ec2d3e37687,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7013992854326273336}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0481801eadacb1e40afd3ec2d3e37687,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 3023454185159937193}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0481801eadacb1e40afd3ec2d3e37687,
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2672995455378350504}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0481801eadacb1e40afd3ec2d3e37687,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7013992854326273336}
   m_SourcePrefab: {fileID: 100100000, guid: 0481801eadacb1e40afd3ec2d3e37687, type: 3}
 --- !u!4 &7014673687161967219 stripped
 Transform:
@@ -251,21 +251,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7013992854326273336
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7643435542127954121}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 972bccd7b1ca4c044bb2ff1176510527, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  selectionSprite: {fileID: 2089924558128889145}
-  agent: {fileID: 4739506357034115715}
-  animator: {fileID: 8042242351934211650}
 --- !u!136 &3023454185159937193
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -316,3 +301,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &7013992854326273336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7643435542127954121}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 972bccd7b1ca4c044bb2ff1176510527, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectionSprite: {fileID: 2089924558128889145}
+  agent: {fileID: 4739506357034115715}
+  animator: {fileID: 8042242351934211650}
+  maxSpeed: 0

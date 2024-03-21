@@ -31,6 +31,12 @@ public class MapGenerator : MonoBehaviour
     private float timeSpent = 0.0f;
     private MeshStorage meshStorage = null;
 
+    public void Start()
+    {
+        DestroyMap();
+        BuildMap();
+    }
+
     public void BuildMap()
     {
         if (meshStorage is null) {
@@ -107,8 +113,8 @@ public class MapGenerator : MonoBehaviour
         // Set the spawn locations of all players.
         float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
         FactionManager factionManager = FindObjectOfType<FactionManager>();
-        Faction[] factions = factionManager.GetFactions();
-        for (int i = 0; i < factions.Length; i++)
+        List<Faction> factions = factionManager.GetFactions();
+        for (int i = 0; i < factions.Count; i++)
         {
             if (!factionManager.CheckFaction(i))
                 break;
