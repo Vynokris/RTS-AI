@@ -53,4 +53,9 @@ public class Unit : MonoBehaviour
     {
         agent.speed = speed;
     }
+
+    public void SetUnitColor(Color color)
+    {
+        selectionSprite.color = color;
+    }
 }

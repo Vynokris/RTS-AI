@@ -3,26 +3,31 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-[Serializable] public class Faction
-{
-    public string name = "";
-    public Color  color;
-    public int    crops  = 10;
-    public int    lumber = 10;
-    public int    stone  = 10;
-    public Tile       spawnTile  = null;
-    public List<Tile> ownedTiles = new();
-}
-
 public class FactionManager : MonoBehaviour
 {
-    [SerializeField] private Faction[] factions = new Faction[4];
+    [SerializeField] private GameObject playerGameObject;
+    [SerializeField] private GameObject aiGameObject;
+
+    [SerializeField] private int playerCount = 2;
+
+    [SerializeField] private List<Faction> factions = new(4);
+
+    [SerializeField] private RectTransform selectionBoxTransform;
     [SerializeField] private TextMeshProUGUI cropsText;
     [SerializeField] private TextMeshProUGUI lumberText;
     [SerializeField] private TextMeshProUGUI stoneText;
 
     private void Start()
     {
+        GameObject player = Instantiate(playerGameObject);
+        player.GetComponent<Player>().SetSelectionBox(selectionBoxTransform);
+        factions.Add(player.GetComponent<Faction>());
+
+        for (int i = 0; i < playerCount - 1; i++)
+        {
+            factions.Add(Instantiate(aiGameObject).GetComponent<Faction>());
+        }
+
         if (!CheckFaction(0) && !CheckFaction(1))
         {
             Debug.LogError("Not enough factions to start game.");
@@ -31,17 +36,17 @@ public class FactionManager : MonoBehaviour
 
     public bool CheckFaction(int idx)
     {
-        if (idx < 0 || idx > factions.Length) return false;
+        if (idx < 0 || idx > factions.Count) return false;
         return !string.IsNullOrWhiteSpace(factions[idx].name);
     }
     
-    public ref Faction GetFaction(int idx)
+    public Faction GetFaction(int idx)
     {
-        if (idx < 0 || idx > factions.Length) return ref factions[0];
-        return ref factions[idx];
+        if (idx < 0 || idx > factions.Count) return factions[0];
+        return factions[idx];
     }
 
-    public Faction[] GetFactions()
+    public List<Faction> GetFactions()
     {
         return factions;
     }
