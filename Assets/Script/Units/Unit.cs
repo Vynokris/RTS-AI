@@ -1,32 +1,56 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Unit : MonoBehaviour
 {
-    public Camera Camera;
-    public UnityEngine.AI.NavMeshAgent Agent;
-    public Animator Animator;
+    [SerializeField] protected SpriteRenderer selectionSprite;
+
+    [SerializeField] protected NavMeshAgent agent;
+    [SerializeField] protected Animator animator;
+
+    [SerializeField] protected float maxSpeed;
 
     // Start is called before the first frame update
     public void Start()
     {
-        Camera = Camera.main;
+        maxSpeed = agent.speed;
     }
 
     // Update is called once per frame
     public void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.ScreenPointToRay(Input.mousePosition);
+        animator.SetFloat("Speed", agent.velocity.magnitude);
+    }
 
-            if (Physics.Raycast(ray, out var hit))
-            {
-                Agent.SetDestination(hit.point);
-            }
-        }
+    public void SetDestination(Vector3 destination)
+    {
+        agent.SetDestination(destination);
+    }
 
-        Animator.SetFloat("Speed", Agent.velocity.magnitude);
+    public void Select()
+    {
+        selectionSprite.gameObject.SetActive(true);
+    }
+
+    public void DeSelect()
+    {
+        selectionSprite.gameObject.SetActive(false);
+    }
+
+    public float GetMaxSpeed()
+    {
+        return maxSpeed;
+    }
+
+    public float GetCurrentSpeed()
+    {
+        return agent.speed;
+    }
+
+    public void SetUnitSpeed(float speed)
+    {
+        agent.speed = speed;
     }
 }
