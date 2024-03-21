@@ -10,12 +10,13 @@ public class Unit : MonoBehaviour
     [SerializeField] protected NavMeshAgent agent;
     [SerializeField] protected Animator animator;
 
-    [SerializeField] protected float maxSpeed;
+    [SerializeField] protected FiniteStateMachine stateMachine;
+    [SerializeField] protected BlackBoard blackBoard;
 
     // Start is called before the first frame update
     public void Start()
     {
-        maxSpeed = agent.speed;
+        blackBoard.SetMaxSpeed(agent.speed);
     }
 
     // Update is called once per frame
@@ -41,7 +42,7 @@ public class Unit : MonoBehaviour
 
     public float GetMaxSpeed()
     {
-        return maxSpeed;
+        return blackBoard.GetMaxSpeed();
     }
 
     public float GetCurrentSpeed()
