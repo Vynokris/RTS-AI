@@ -1,29 +1,65 @@
-using System.Collections;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Faction : MonoBehaviour
 {
+    protected static uint maxID = 0;
+    public const uint unassignedID = uint.MaxValue;
+    
+    public uint id { get; private set; }
     public string designation = "";
     public Color color;
-    public int crops = 10;
-    public int lumber = 10;
-    public int stone = 10;
-    public Tile spawnTile = null;
-    public List<Tile> ownedTiles = new();
+    public float crops  = 10;
+    public float lumber = 10;
+    public float stone  = 10;
+    public Tile spawnTile { get; protected set; } = null;
+    protected List<Tile> ownedTiles = new();
 
     protected Crowd crowd = new();
-    protected List<Unit> units = new();
+    protected List<Troop> troops = new();
+    
+    protected TroopStorage troopStorage;
 
-    public void Start()
+    public Faction() { id = maxID++; }
+    public uint GetID() { return id; }
+
+    public virtual void Start()
     {
-        Unit golem = Instantiate(TroopStorage.instance.GetTroopPrefab(TroopType.Golem)).GetComponent<Unit>();
-        golem.SetUnitColor(color);
+        troopStorage = FindObjectOfType<TroopStorage>();
+        
+        NavMesh.SamplePosition(spawnTile.transform.position, out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
+        for (int i = 0; i < 5; i++)
+        {
+            SpawnTroop(TroopType.Knight, navMeshHit.position + Vector3.up);
+            SpawnTroop(TroopType.Golem,  navMeshHit.position + Vector3.up);
+        }
+    }
 
-        Unit knight = Instantiate(TroopStorage.instance.GetTroopPrefab(TroopType.Knight)).GetComponent<Unit>();
-        knight.SetUnitColor(color);
+    public void TakeOwnership(Tile tile, bool setAsSpawn = false)
+    {
+        tile.SetFaction(this);
+        ownedTiles.Add(tile);
+        if (setAsSpawn) spawnTile = tile;
+    }
 
-        units.Add(golem);
-        units.Add(knight);
+    public void RemoveOwnership(Tile tile)
+    {
+        ownedTiles.Remove(tile);
+        tile.SetFaction(null);
+    }
+
+    public void SpawnTroop(TroopType type, Vector3 position)
+    {
+        Troop troop = Instantiate(troopStorage.GetTroopPrefab(type), position, Quaternion.identity).GetComponent<Troop>();
+        troop.SetFaction(this);
+        troops.Add(troop);
+    }
+
+    public void DestroyTroop(Troop troop)
+    {
+        troops.Remove(troop);
+        Destroy(troop);
     }
 }

@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class MapGenerator : MonoBehaviour
@@ -61,7 +58,7 @@ public class MapGenerator : MonoBehaviour
             for (int j = 0; j < mapSize.x; j++)
             {
                 var worldPos = grid.GetCellCenterWorld(new Vector3Int(j, i));
-                GameObject tileObj = Instantiate(tilePrefab, worldPos, Quaternion.AngleAxis(60 * Random.Range(0, 6), Vector3.up), transform);
+                GameObject tileObj = Instantiate(tilePrefab, worldPos, Quaternion.AngleAxis(60 * Random.Range(1, 3), Vector3.up), transform);
 
                 float totalSample = 0f;
                 float frequency = 1f;
@@ -113,12 +110,9 @@ public class MapGenerator : MonoBehaviour
         // Set the spawn locations of all players.
         float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
         FactionManager factionManager = FindObjectOfType<FactionManager>();
-        List<Faction> factions = factionManager.GetFactions();
-        for (int i = 0; i < factions.Count; i++)
+        Dictionary<uint, Faction> factions = factionManager.GetFactions();
+        foreach (uint i in factions.Keys)
         {
-            if (!factionManager.CheckFaction(i))
-                break;
-            
             Tile spawnTile = null;
             while (spawnTile is null) // There is a universe where this is an infinite loop...
             {
@@ -130,19 +124,17 @@ public class MapGenerator : MonoBehaviour
                     randTile.propType is PropType.None or PropType.Breakable)
                 {
                     bool isFarEnough = true;
-                    for (int j = 0; j < i; j++)
+                    foreach (uint j in factions.Keys)
                     {
+                        if (j == i) break;
                         float distance = Vector2.Distance(randTile.transform.position, factions[j].spawnTile.transform.position);
                         if (distance < minDistance) isFarEnough = false;
                     }
-                    if (isFarEnough)
-                        spawnTile = randTile;
+                    if (isFarEnough) spawnTile = randTile;
                 }
             }
             spawnTile.SetBuilding(BuildingType.Castle);
-            spawnTile.SetFaction(i);
-            factions[i].spawnTile = spawnTile;
-            factions[i].ownedTiles.Add(spawnTile);
+            factions[i].TakeOwnership(spawnTile, true);
         }
         
         navMesh.BuildNavMesh();

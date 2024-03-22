@@ -5,14 +5,14 @@ using UnityEngine;
 
 public class Crowd
 {
-    private readonly HashSet<Unit> selectedUnits = new HashSet<Unit>();
+    private readonly HashSet<Troop> troops = new();
     private float slowestTroopSpeed = float.MaxValue;
 
-    public void ComputeSlowestUnitSpeed()
+    public void ComputeSlowestTroopSpeed()
     {
         float slowestSoFar = float.MaxValue;
 
-        foreach (var unit in selectedUnits)
+        foreach (var unit in troops)
         {
             if (unit.GetMaxSpeed() < slowestSoFar)
                 slowestSoFar = unit.GetMaxSpeed();
@@ -23,7 +23,7 @@ public class Crowd
 
     public void SetCrowdSpeed(float speed)
     {
-        foreach (var unit in selectedUnits)
+        foreach (var unit in troops)
         {
             unit.SetUnitSpeed(speed);
         }
@@ -36,19 +36,29 @@ public class Crowd
 
     public void SetCrowdDestination(Vector3 destination)
     {
-        foreach (var unit in selectedUnits)
+        foreach (var unit in troops)
         {
             unit.SetDestination(destination);
         }
     }
 
-    public void AddUnitToCrowd(Unit unit)
+    public void AddTroop(Troop troop)
     {
-        selectedUnits.Add(unit);
+        troops.Add(troop);
+        troop.Select();
     }
 
-    public void RemoveUnitFromCrowd(Unit unit)
+    public void RemoveTroop(Troop troop)
     {
-        selectedUnits.Remove(unit);
+        troops.Remove(troop);
+        troop.Deselect();
+    }
+
+    public void RemoveAllTroops()
+    {
+        foreach (Troop troop in troops) {
+            troop.Deselect();
+        }
+        troops.Clear();
     }
 }

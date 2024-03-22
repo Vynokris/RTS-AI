@@ -1,60 +1,47 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FactionManager : MonoBehaviour
 {
     [SerializeField] private GameObject playerGameObject;
     [SerializeField] private GameObject aiGameObject;
 
+    [SerializeField] private PlayerNecessaryGameObjects playerNecessaryGameObjects;
+
     [SerializeField] private int playerCount = 2;
 
-    [SerializeField] private List<Faction> factions = new(4);
-
-    [SerializeField] private RectTransform selectionBoxTransform;
-    [SerializeField] private TextMeshProUGUI cropsText;
-    [SerializeField] private TextMeshProUGUI lumberText;
-    [SerializeField] private TextMeshProUGUI stoneText;
+    private Dictionary<uint, Faction> factions = new();
+    public static Player playerFaction { get; private set; }
 
     private void Start()
     {
-        GameObject player = Instantiate(playerGameObject);
-        player.GetComponent<Player>().SetSelectionBox(selectionBoxTransform);
-        factions.Add(player.GetComponent<Faction>());
+        Player player = Instantiate(playerGameObject).GetComponent<Player>();
+        player.SetNecessaryGameObjects(playerNecessaryGameObjects);
+        factions.Add(player.GetID(), player);
+        playerFaction = player;
 
-        for (int i = 0; i < playerCount - 1; i++)
+        for (int i = 1; i < playerCount; i++)
         {
-            factions.Add(Instantiate(aiGameObject).GetComponent<Faction>());
+            Faction ai = Instantiate(aiGameObject).GetComponent<Faction>();
+            factions.Add(ai.GetID(), ai);
         }
 
-        if (!CheckFaction(0) && !CheckFaction(1))
+        if (factions.Count < 2)
         {
             Debug.LogError("Not enough factions to start game.");
         }
     }
-
-    public bool CheckFaction(int idx)
-    {
-        if (idx < 0 || idx > factions.Count) return false;
-        return !string.IsNullOrWhiteSpace(factions[idx].name);
-    }
     
-    public Faction GetFaction(int idx)
+    public Faction TryGetFaction(uint id)
     {
-        if (idx < 0 || idx > factions.Count) return factions[0];
-        return factions[idx];
+        if (id is Faction.unassignedID || !factions.TryGetValue(id, out Faction faction)) return null;
+        return faction;
     }
 
-    public List<Faction> GetFactions()
+    public Dictionary<uint, Faction> GetFactions()
     {
         return factions;
-    }
-
-    private void Update()
-    {
-        cropsText .text = factions[0].crops .ToString();
-        lumberText.text = factions[0].lumber.ToString();
-        stoneText .text = factions[0].stone .ToString();
     }
 }

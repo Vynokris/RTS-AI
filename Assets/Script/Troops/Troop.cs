@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Unit : MonoBehaviour
+public class Troop : MonoBehaviour
 {
+    [LabelOverride("Unit Type")] [SerializeField] protected TroopType serializedType;
     [SerializeField] protected SpriteRenderer selectionSprite;
 
     [SerializeField] protected NavMeshAgent agent;
@@ -12,14 +13,15 @@ public class Unit : MonoBehaviour
 
     [SerializeField] protected FiniteStateMachine stateMachine;
     [SerializeField] protected BlackBoard blackBoard;
+    
+    public Faction owningFaction { get; private set; } = null;
+    public TroopType type { get; private set; } = TroopType.Knight;
 
-    // Start is called before the first frame update
     public void Start()
     {
         blackBoard.SetMaxSpeed(agent.speed);
     }
 
-    // Update is called once per frame
     public void Update()
     {
         animator.SetFloat("Speed", agent.velocity.magnitude);
@@ -35,7 +37,7 @@ public class Unit : MonoBehaviour
         selectionSprite.gameObject.SetActive(true);
     }
 
-    public void DeSelect()
+    public void Deselect()
     {
         selectionSprite.gameObject.SetActive(false);
     }
@@ -53,6 +55,12 @@ public class Unit : MonoBehaviour
     public void SetUnitSpeed(float speed)
     {
         agent.speed = speed;
+    }
+
+    public void SetFaction(Faction faction)
+    {
+        owningFaction = faction;
+        SetUnitColor(owningFaction.color);
     }
 
     public void SetUnitColor(Color color)

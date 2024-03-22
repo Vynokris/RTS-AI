@@ -18,6 +18,11 @@ public class CameraControls : MonoBehaviour
     private Vector3 lastCorrectZoom;
     private Vector3 newZoom;
 
+    public void SetOrigin(Vector3 position)
+    {
+        newPosition = position;
+    }
+    
     private void Start()
     {
         newPosition = transform.position;
@@ -51,7 +56,7 @@ public class CameraControls : MonoBehaviour
             newPosition += (transform.right * movementSpeed);
         }
 
-        newZoom += cameraTransform.forward * Input.mouseScrollDelta.y * 2;
+        newZoom += cameraTransform.forward * (Input.mouseScrollDelta.y * 2);
 
         if (newZoom.y < yMin)
         {

@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public enum TileType
 {
@@ -46,7 +43,7 @@ public enum BuildingType
 
 public class Tile : MonoBehaviour
 {
-    public int          owningFaction { get; private set; } = -1;
+    public Faction      owningFaction { get; private set; } = null;
     public TileType     type          { get; private set; } = TileType.Grass;
     public PropType     propType      { get; private set; } = PropType.None;
     public ResourceType resourceType  { get; private set; } = ResourceType.None;
@@ -54,15 +51,41 @@ public class Tile : MonoBehaviour
     public GameObject   prop          { get; private set; } = null;
     public GameObject   resource      { get; private set; } = null;
     public GameObject   building      { get; private set; } = null;
-    public float noiseHeight = 0.0f;
+    [HideInInspector] public float noiseHeight = 0.0f;
     
     [SerializeField] private GameObject propPrefab;
     [SerializeField] private GameObject resourcePrefab;
     [SerializeField] private GameObject buildingPrefab;
+    [SerializeField] private float resourceProductionPerSecond = .2f;
     
     private MeshFilter  meshFilter;
     private MeshStorage meshStorage;
-    
+
+    public void Start()
+    {
+        enabled = false;
+    }
+
+    public void Update()
+    {
+        if (owningFaction is null) return;
+        switch (buildingType)
+        {
+            case BuildingType.Farm:
+                owningFaction.crops += resourceProductionPerSecond * Time.deltaTime;
+                break;
+            case BuildingType.Lumbermill:
+                owningFaction.lumber += resourceProductionPerSecond * Time.deltaTime;
+                break;
+            case BuildingType.Mine:
+                owningFaction.stone += resourceProductionPerSecond * Time.deltaTime;
+                break;
+            case BuildingType.Barracks:
+                // TODO: Spawn soldiers.
+                break;
+        }
+    }
+
     public void FindMeshFilter()
     {
         meshFilter = GetComponent<MeshFilter>();
@@ -80,9 +103,9 @@ public class Tile : MonoBehaviour
             : (gameObject.transform.localScale.y / 100 * 0.2f) - 0.2f;
     }
 
-    public void SetFaction(int factionIdx)
+    public void SetFaction(Faction faction)
     {
-        owningFaction = factionIdx;
+        owningFaction = faction;
     }
 
     public void SetType(TileType tileType)
@@ -174,7 +197,29 @@ public class Tile : MonoBehaviour
         building.GetComponent<MeshFilter>().mesh = meshStorage.GetBuilding(buildingType);
         building.transform.position  += new Vector3(0, GetTileHeight(), 0);
         building.transform.localScale = new Vector3(100, 100, 100);
+        if (buildingType is BuildingType.Farm or BuildingType.Lumbermill or BuildingType.Mine)
+            enabled = true;
         return true;
     }
 
+    public void RemoveBuilding()
+    {
+        if (building is not null)
+            Destroy(building);
+
+        BuildingType prevBuildingType = buildingType;
+        buildingType = BuildingType.None;
+        switch (prevBuildingType)
+        {
+            case BuildingType.Lumbermill:
+                SetResource(ResourceType.Lumber);
+                break;
+            case BuildingType.Mine:
+                SetResource(ResourceType.Stone);
+                break;
+        }
+        
+        owningFaction.RemoveOwnership(this);
+        enabled = false;
+    }
 }

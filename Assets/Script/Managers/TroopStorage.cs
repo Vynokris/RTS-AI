@@ -2,17 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum TroopType
+{
+    Golem,
+    Knight
+}
+
 public class TroopStorage : MonoBehaviour
 {
-    public static TroopStorage instance { get; private set; }
-
-    [SerializeField] private GameObject golemPrefab;
     [SerializeField] private GameObject knightPrefab;
-
-    public void Awake()
-    {
-        instance = this;
-    }
+    [SerializeField] private GameObject golemPrefab;
 
     public GameObject GetTroopPrefab(TroopType type)
     {
@@ -24,10 +23,3 @@ public class TroopStorage : MonoBehaviour
         };
     }
 }
-
-public enum TroopType
-{
-    Golem,
-    Knight
-}
-
