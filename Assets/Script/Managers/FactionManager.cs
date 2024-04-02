@@ -8,8 +8,6 @@ public class FactionManager : MonoBehaviour
     [SerializeField] private GameObject playerGameObject;
     [SerializeField] private GameObject aiGameObject;
 
-    [SerializeField] private PlayerNecessaryGameObjects playerNecessaryGameObjects;
-
     [SerializeField] private int playerCount = 2;
 
     private Dictionary<uint, Faction> factions = new();
@@ -18,7 +16,6 @@ public class FactionManager : MonoBehaviour
     private void Start()
     {
         Player player = Instantiate(playerGameObject).GetComponent<Player>();
-        player.SetNecessaryGameObjects(playerNecessaryGameObjects);
         factions.Add(player.GetID(), player);
         playerFaction = player;
 

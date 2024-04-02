@@ -36,8 +36,8 @@ public enum BuildingType
     Farm,
     Lumbermill,
     Mine,
-    Castle,
     Barracks,
+    Castle,
 }
 
 

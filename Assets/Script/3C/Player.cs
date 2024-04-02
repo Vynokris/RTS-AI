@@ -10,42 +10,39 @@ using UnityEngine.UI;
     public Vector2 hotspot;
 }
 
-[Serializable] public struct PlayerNecessaryGameObjects
-{
-    public RectTransform selectionBox;
-    public TextMeshProUGUI cropsText;
-    public TextMeshProUGUI lumberText;
-    public TextMeshProUGUI stoneText;
-    public GameObject buildingUI;
-    public Button castleSelectButton;
-    public Button barracksSelectButton;
-    public Button farmSelectButton;
-    public Button lumbermillSelectButton;
-    public Button mineSelectButton;
-}
-
 public class Player : Faction
 {
     [SerializeField] private CursorParams defaultCursor;
     [SerializeField] private CursorParams buildCursor;
     [SerializeField] private CursorParams attackCursor;
 
-    private PlayerNecessaryGameObjects objectRefs;
     private Plane   selectionDefaultPlane;
     private Vector3 selectionStartWorld;
     
+    private UiManager   uiManager;
     private CostStorage costStorage;
-    private Camera cam;
+    private Camera      cam;
+    
     private bool inBuildMode = false;
     private BuildingType currentlyPlacingBuilding = BuildingType.None;
+    private Tile selectedBarracks = null;
     
     public override void Start()
     {
         base.Start();
+        uiManager   = FindObjectOfType<UiManager>();
         costStorage = FindObjectOfType<CostStorage>();
-        cam = Camera.main;
+        cam         = Camera.main;
         selectionDefaultPlane = new Plane(Vector3.up, Vector3.zero);
         
+        // Set the UI buttons callbacks.
+        uiManager.AddBuildingSelectButtonListener(BuildingType.Castle,     () => currentlyPlacingBuilding = BuildingType.Castle);
+        uiManager.AddBuildingSelectButtonListener(BuildingType.Barracks,   () => currentlyPlacingBuilding = BuildingType.Barracks);
+        uiManager.AddBuildingSelectButtonListener(BuildingType.Farm,       () => currentlyPlacingBuilding = BuildingType.Farm);
+        uiManager.AddBuildingSelectButtonListener(BuildingType.Lumbermill, () => currentlyPlacingBuilding = BuildingType.Lumbermill);
+        uiManager.AddBuildingSelectButtonListener(BuildingType.Mine,       () => currentlyPlacingBuilding = BuildingType.Mine);
+        
+        // Move the camera to the faction's spawn tile.
         Ray ray = new Ray(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + 4.5f), cam.transform.rotation * Vector3.forward);
         if (selectionDefaultPlane.Raycast(ray, out float enter))
         {
@@ -59,7 +56,7 @@ public class Player : Faction
 
     void Update()
     {
-        UpdateCanvas();
+        uiManager.UpdateResourcesText(crops, lumber, stone);
         ModeManagement();
 
         if (!inBuildMode) {
@@ -70,26 +67,34 @@ public class Player : Faction
         }
     }
 
-    private void UpdateCanvas()
-    {
-        objectRefs.cropsText .text = crops .ToString("0.");
-        objectRefs.lumberText.text = lumber.ToString("0.");
-        objectRefs.stoneText .text = stone .ToString("0.");
-    }
-
     private void ModeManagement()
     {
+        // Switch between troop management and building modes.
         if (Input.GetKeyDown(KeyCode.E)) 
         {
             inBuildMode = !inBuildMode;
             if (inBuildMode) {
                 Cursor.SetCursor(buildCursor.texture, buildCursor.hotspot, CursorMode.Auto);
-                objectRefs.buildingUI.SetActive(true);
+                uiManager.ToggleBuildingUI(true);
+                uiManager.ToggleTroopTrainingUI(false);
             }
             else {
                 Cursor.SetCursor(defaultCursor.texture, defaultCursor.hotspot, CursorMode.Auto);
-                objectRefs.buildingUI.SetActive(false);
+                uiManager.ToggleBuildingUI(false);
             }
+        }
+        
+        // Open troop training window if in troop management mode and barracks building selected.
+        if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0) && !inBuildMode)
+        {
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
+            {
+                selectedBarracks = hit.transform.gameObject.GetComponent<Tile>();
+                if (selectedBarracks.buildingType is not BuildingType.Barracks)
+                    selectedBarracks = null;
+            }
+            uiManager.ToggleTroopTrainingUI(selectedBarracks is not null);
         }
     }
 
@@ -97,8 +102,9 @@ public class Player : Faction
     {
         if (Input.GetMouseButtonDown(0))
         {
-            objectRefs.selectionBox.sizeDelta = Vector2.zero;
-            objectRefs.selectionBox.gameObject.SetActive(true);
+            RectTransform selectionBox = uiManager.GetSelectionBox();
+            selectionBox.sizeDelta = Vector2.zero;
+            selectionBox.gameObject.SetActive(true);
             ScreenPointToMap(Input.mousePosition, out selectionStartWorld);
         }
 
@@ -109,8 +115,9 @@ public class Player : Faction
 
         else if (Input.GetMouseButtonUp(0))
         {
-            objectRefs.selectionBox.sizeDelta = Vector2.zero;
-            objectRefs.selectionBox.gameObject.SetActive(false);
+            RectTransform selectionBox = uiManager.GetSelectionBox();
+            selectionBox.sizeDelta = Vector2.zero;
+            selectionBox.gameObject.SetActive(false);
             crowd.ComputeSlowestTroopSpeed();
             crowd.LimitCrowdSpeedToSlowest();
         }
@@ -129,11 +136,12 @@ public class Player : Faction
         Vector2 selectionStartScreen = cam.WorldToScreenPoint(selectionStartWorld);
         float width  = Input.mousePosition.x - selectionStartScreen.x;
         float height = Input.mousePosition.y - selectionStartScreen.y;
-
-        objectRefs.selectionBox.anchoredPosition = selectionStartScreen + new Vector2(width / 2, height / 2);
-        objectRefs.selectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
         
-        Bounds bounds = new Bounds(objectRefs.selectionBox.anchoredPosition, objectRefs.selectionBox.sizeDelta);
+        RectTransform selectionBox = uiManager.GetSelectionBox();
+        selectionBox.anchoredPosition = selectionStartScreen + new Vector2(width / 2, height / 2);
+        selectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
+        
+        Bounds bounds = new Bounds(selectionBox.anchoredPosition, selectionBox.sizeDelta);
         foreach (var troop in troops)
         {
             Vector3 troopPosition = cam.WorldToScreenPoint(troop.transform.position);
@@ -160,8 +168,7 @@ public class Player : Faction
             if (Input.GetMouseButtonDown(0))
             {
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
+                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
                     
@@ -181,8 +188,7 @@ public class Player : Faction
             if (Input.GetMouseButtonDown(1))
             {
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
+                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
 
@@ -211,16 +217,5 @@ public class Player : Faction
         }
         worldPoint = Vector3.zero;
         return false;
-    }
-
-    public void SetNecessaryGameObjects(PlayerNecessaryGameObjects gameObjects)
-    {
-        objectRefs = gameObjects;
-        
-        objectRefs.castleSelectButton    .onClick.AddListener(() => currentlyPlacingBuilding = BuildingType.Castle);
-        objectRefs.barracksSelectButton  .onClick.AddListener(() => currentlyPlacingBuilding = BuildingType.Barracks);
-        objectRefs.farmSelectButton      .onClick.AddListener(() => currentlyPlacingBuilding = BuildingType.Farm);
-        objectRefs.lumbermillSelectButton.onClick.AddListener(() => currentlyPlacingBuilding = BuildingType.Lumbermill);
-        objectRefs.mineSelectButton      .onClick.AddListener(() => currentlyPlacingBuilding = BuildingType.Mine);
     }
 }
