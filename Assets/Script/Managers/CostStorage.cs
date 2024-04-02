@@ -7,20 +7,33 @@ using UnityEngine;
     public int lumber;
     public int stone;
 
-    public bool CanBePerformed(float ownedCrops, float ownedLumber, float ownedStone)
+    public bool CanPerform(float ownedCrops, float ownedLumber, float ownedStone)
     {
         return ownedCrops >= crops && ownedLumber >= lumber && ownedStone >= stone;
     }
 
-    public bool TryPerform(ref float ownedCrops, ref float ownedLumber, ref float ownedStone)
+    /// Should only ever be used if CanPerform returns true.
+    public void ForcePerform(ref float ownedCrops, ref float ownedLumber, ref float ownedStone)
     {
-        if (!CanBePerformed(ownedCrops, ownedLumber, ownedStone)) {
-            return false;
-        }
         ownedCrops  -= crops;
         ownedLumber -= lumber;
         ownedStone  -= stone;
+    }
+
+    public bool TryPerform(ref float ownedCrops, ref float ownedLumber, ref float ownedStone)
+    {
+        if (!CanPerform(ownedCrops, ownedLumber, ownedStone)) {
+            return false;
+        }
+        ForcePerform(ref ownedCrops, ref ownedLumber, ref ownedStone);
         return true;
+    }
+
+    public void Undo(ref float ownedCrops, ref float ownedLumber, ref float ownedStone)
+    {
+        ownedCrops  += crops;
+        ownedLumber += lumber;
+        ownedStone  += stone;
     }
 }
 

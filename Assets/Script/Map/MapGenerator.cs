@@ -133,7 +133,7 @@ public class MapGenerator : MonoBehaviour
                     if (isFarEnough) spawnTile = randTile;
                 }
             }
-            spawnTile.SetBuilding(BuildingType.Castle);
+            spawnTile.TrySetBuilding(BuildingType.Castle);
             factions[i].TakeOwnership(spawnTile, true);
         }
         
@@ -185,7 +185,7 @@ public class MapGenerator : MonoBehaviour
         if (!spawnProp) return false;
         
         int random = Random.Range(0, propMeshes.Count);
-        return tile.SetProp(propMeshes[random]);
+        return tile.TrySetProp(propMeshes[random]);
     }
 
     private bool SetTileResource(Tile tile)
@@ -201,7 +201,7 @@ public class MapGenerator : MonoBehaviour
         };
         if (resourceType is ResourceType.None) return false;
 
-        return tile.SetResource(resourceType);
+        return tile.TrySetResource(resourceType);
     }
 
     void LevelWater(Tile tile)

@@ -156,16 +156,42 @@ public class Player : Faction
         {
             Cursor.SetCursor(buildCursor.texture, buildCursor.hotspot, CursorMode.Auto);
             
+            // Construct new buildings.
             if (Input.GetMouseButtonDown(0))
             {
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile"))
-                    && costStorage.GetBuilding(currentlyPlacingBuilding).TryPerform(ref crops, ref lumber, ref stone))
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
-                    tile.SetBuilding(currentlyPlacingBuilding);
-                    TakeOwnership(tile);
+                    
+                    ActionCost buildCost = costStorage.GetBuilding(currentlyPlacingBuilding);
+                    bool canSetBuilding  = tile.CanSetBuilding(currentlyPlacingBuilding);
+                    bool canPerform      = buildCost.CanPerform(crops, lumber, stone);
+                    
+                    if (canSetBuilding && canPerform) {
+                        tile.ForceSetBuilding(currentlyPlacingBuilding);
+                        buildCost.ForcePerform(ref crops, ref lumber, ref stone);
+                        TakeOwnership(tile);
+                    }
+                }
+            }
+
+            // Destroy constructed buildings.
+            if (Input.GetMouseButtonDown(1))
+            {
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
+                {
+                    Tile tile = hit.transform.gameObject.GetComponent<Tile>();
+
+                    if (tile.buildingType is not BuildingType.None)
+                    {
+                        ActionCost buildCost = costStorage.GetBuilding(tile.buildingType);
+                        tile.RemoveBuilding();
+                        buildCost.Undo(ref crops, ref lumber, ref stone);
+                    }
                 }
             }
         }
