@@ -126,6 +126,7 @@ public class Player : Faction
                 if (possibleTroop && possibleTroop?.owningFaction.id != id)
                 {
                     crowd.ForceState("Attack");
+                    crowd.SetCrowdTarget(possibleTroop);
                 }
 
                 else
