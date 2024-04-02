@@ -503,6 +503,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5079043087594181268}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7518321342432995925}
   m_SourcePrefab: {fileID: 100100000, guid: ca4d2e03b5c59204fa09dc2222a14265, type: 3}
 --- !u!1 &184719126140870912 stripped
 GameObject:
@@ -541,6 +545,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxLife: 10
+  range: 2
+  damage: 1
 --- !u!114 &4397071374817475783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -645,6 +651,27 @@ CapsuleCollider:
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!135 &7518321342432995925
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184719126140870912}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 2039
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 4
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!4 &710321609632168890 stripped
 Transform:
