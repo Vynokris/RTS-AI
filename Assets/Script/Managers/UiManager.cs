@@ -72,9 +72,9 @@ public class UiManager : MonoBehaviour
 
     public void UpdateResourcesText(float crops, float lumber, float stone)
     {
-        cropsText .text = crops .ToString("0.");
-        lumberText.text = lumber.ToString("0.");
-        stoneText .text = stone .ToString("0.");
+        cropsText .text = ((int)crops) .ToString();
+        lumberText.text = ((int)lumber).ToString();
+        stoneText .text = ((int)stone) .ToString();
     }
 
     public void ToggleBuildingUI(bool visible)

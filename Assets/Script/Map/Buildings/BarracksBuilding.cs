@@ -38,6 +38,7 @@ public class BarracksBuilding : Building
 
                 if (troopTrainingQueue.Count <= 0) {
                     enabled = false;
+                    troopTrainingTimer = 0;
                 }
             }
         }

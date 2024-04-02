@@ -9,13 +9,13 @@ public class ResourceBuilding : Building
         switch (owningTile.buildingType)
         {
             case BuildingType.Farm:
-                owningTile.owningFaction.crops += resourceProductionPerSecond;
+                owningTile.owningFaction.crops += resourceProductionPerSecond * Time.deltaTime;
                 break;
             case BuildingType.Lumbermill:
-                owningTile.owningFaction.lumber += resourceProductionPerSecond;
+                owningTile.owningFaction.lumber += resourceProductionPerSecond * Time.deltaTime;
                 break;
             case BuildingType.Mine:
-                owningTile.owningFaction.stone += resourceProductionPerSecond;
+                owningTile.owningFaction.stone += resourceProductionPerSecond * Time.deltaTime;
                 break;
         }
     }
