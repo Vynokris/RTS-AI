@@ -50,13 +50,14 @@ public class Tile : MonoBehaviour
     public BuildingType buildingType  { get; private set; } = BuildingType.None;
     public GameObject   prop          { get; private set; } = null;
     public GameObject   resource      { get; private set; } = null;
-    public GameObject   building      { get; private set; } = null;
+    public Building     building      { get; private set; } = null;
     [HideInInspector] public float noiseHeight = 0.0f;
     
     [SerializeField] private GameObject propPrefab;
     [SerializeField] private GameObject resourcePrefab;
     [SerializeField] private GameObject buildingPrefab;
-    [SerializeField] private float resourceProductionPerSecond = .2f;
+    [SerializeField] private GameObject resourceBuildingPrefab;
+    [SerializeField] private GameObject barracksBuildingPrefab;
     
     private MeshFilter  meshFilter;
     private MeshStorage meshStorage;
@@ -64,26 +65,6 @@ public class Tile : MonoBehaviour
     public void Start()
     {
         enabled = false;
-    }
-
-    public void Update()
-    {
-        if (owningFaction is null) return;
-        switch (buildingType)
-        {
-            case BuildingType.Farm:
-                owningFaction.crops += resourceProductionPerSecond * Time.deltaTime;
-                break;
-            case BuildingType.Lumbermill:
-                owningFaction.lumber += resourceProductionPerSecond * Time.deltaTime;
-                break;
-            case BuildingType.Mine:
-                owningFaction.stone += resourceProductionPerSecond * Time.deltaTime;
-                break;
-            case BuildingType.Barracks:
-                // TODO: Spawn soldiers.
-                break;
-        }
     }
 
     public void FindMeshFilter()
@@ -213,7 +194,14 @@ public class Tile : MonoBehaviour
         
         // Create the building.
         buildingType = _buildingType;
-        building = Instantiate(buildingPrefab, transform.parent);
+        GameObject instantiatedBuilding = buildingType switch
+        {
+            BuildingType.Farm or BuildingType.Lumbermill or BuildingType.Mine => resourceBuildingPrefab,
+            BuildingType.Barracks => barracksBuildingPrefab,
+            _ => buildingPrefab
+        };
+        building = Instantiate(instantiatedBuilding, transform.parent).GetComponent<Building>();
+        building.SetOwningTile(this);
         building.GetComponent<MeshFilter>().mesh = meshStorage.GetBuilding(buildingType);
         building.transform.position  += new Vector3(0, GetTileHeight(), 0);
         building.transform.localScale = new Vector3(100, 100, 100);

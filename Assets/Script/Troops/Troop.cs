@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class Troop : MonoBehaviour
 {
-    [LabelOverride("Unit Type")] [SerializeField] protected TroopType serializedType;
+    [SerializeField] [LabelOverride("Unit Type")] protected TroopType serializedType;
     [SerializeField] protected SpriteRenderer selectionSprite;
 
     [SerializeField] protected NavMeshAgent agent;

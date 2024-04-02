@@ -52,7 +52,7 @@ public class CostStorage : MonoBehaviour
     public ActionCost troopCavalier;
     public ActionCost troopGolem;
     
-    public ActionCost GetBuilding(BuildingType type)
+    public ActionCost GetBuildingCost(BuildingType type)
     {
         return type switch
         {
@@ -65,7 +65,7 @@ public class CostStorage : MonoBehaviour
         };
     }
     
-    public ActionCost GetTroop(TroopType type)
+    public ActionCost GetTroopCost(TroopType type)
     {
         return type switch
         {

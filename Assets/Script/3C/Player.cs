@@ -25,7 +25,7 @@ public class Player : Faction
     
     private bool inBuildMode = false;
     private BuildingType currentlyPlacingBuilding = BuildingType.None;
-    private Tile selectedBarracks = null;
+    private BarracksBuilding selectedBarracks = null;
     
     public override void Start()
     {
@@ -41,6 +41,10 @@ public class Player : Faction
         uiManager.AddBuildingSelectButtonListener(BuildingType.Farm,       () => currentlyPlacingBuilding = BuildingType.Farm);
         uiManager.AddBuildingSelectButtonListener(BuildingType.Lumbermill, () => currentlyPlacingBuilding = BuildingType.Lumbermill);
         uiManager.AddBuildingSelectButtonListener(BuildingType.Mine,       () => currentlyPlacingBuilding = BuildingType.Mine);
+        uiManager.AddTroopSelectButtonListener(TroopType.Knight,   () => selectedBarracks?.AddTroopToTrain(TroopType.Knight));
+        uiManager.AddTroopSelectButtonListener(TroopType.Archer,   () => selectedBarracks?.AddTroopToTrain(TroopType.Archer));
+        uiManager.AddTroopSelectButtonListener(TroopType.Cavalier, () => selectedBarracks?.AddTroopToTrain(TroopType.Cavalier));
+        uiManager.AddTroopSelectButtonListener(TroopType.Golem,    () => selectedBarracks?.AddTroopToTrain(TroopType.Golem));
         
         // Move the camera to the faction's spawn tile.
         Ray ray = new Ray(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + 4.5f), cam.transform.rotation * Vector3.forward);
@@ -87,14 +91,21 @@ public class Player : Faction
         // Open troop training window if in troop management mode and barracks building selected.
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0) && !inBuildMode)
         {
+            Tile selectedTile = null;
+            selectedBarracks  = null;
+            
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
             {
-                selectedBarracks = hit.transform.gameObject.GetComponent<Tile>();
-                if (selectedBarracks.buildingType is not BuildingType.Barracks)
-                    selectedBarracks = null;
+                selectedTile = hit.transform.gameObject.GetComponent<Tile>();
+                if (selectedTile.buildingType is not BuildingType.Barracks) {
+                    selectedTile = null;
+                }
+                else {
+                    selectedBarracks = selectedTile.building as BarracksBuilding;
+                }
             }
-            uiManager.ToggleTroopTrainingUI(selectedBarracks is not null);
+            uiManager.ToggleTroopTrainingUI(selectedTile is not null);
         }
     }
 
@@ -172,7 +183,7 @@ public class Player : Faction
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
                     
-                    ActionCost buildCost = costStorage.GetBuilding(currentlyPlacingBuilding);
+                    ActionCost buildCost = costStorage.GetBuildingCost(currentlyPlacingBuilding);
                     bool canSetBuilding  = tile.CanSetBuilding(currentlyPlacingBuilding);
                     bool canPerform      = buildCost.CanPerform(crops, lumber, stone);
                     
@@ -194,7 +205,7 @@ public class Player : Faction
 
                     if (tile.buildingType is not BuildingType.None)
                     {
-                        ActionCost buildCost = costStorage.GetBuilding(tile.buildingType);
+                        ActionCost buildCost = costStorage.GetBuildingCost(tile.buildingType);
                         tile.RemoveBuilding();
                         buildCost.Undo(ref crops, ref lumber, ref stone);
                     }
