@@ -29,12 +29,9 @@ public class Faction : MonoBehaviour
     {
         troopStorage = FindObjectOfType<TroopStorage>();
         
-        NavMesh.SamplePosition(spawnTile.transform.position, out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
-        for (int i = 0; i < 5; i++)
-        {
-            SpawnTroop(TroopType.Knight, navMeshHit.position + Vector3.up);
-            SpawnTroop(TroopType.Golem,  navMeshHit.position + Vector3.up);
-        }
+        NavMesh.SamplePosition(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + .5f), out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
+
+        Troop troop = SpawnTroop(TroopType.Knight, navMeshHit.position);
     }
 
     public void TakeOwnership(Tile tile, bool setAsSpawn = false)
@@ -50,11 +47,13 @@ public class Faction : MonoBehaviour
         tile.SetFaction(null);
     }
 
-    public void SpawnTroop(TroopType type, Vector3 position)
+    public Troop SpawnTroop(TroopType type, Vector3 position)
     {
         Troop troop = Instantiate(troopStorage.GetTroopPrefab(type), position, Quaternion.identity).GetComponent<Troop>();
         troop.SetFaction(this);
         troops.Add(troop);
+
+        return troop;
     }
 
     public void DestroyTroop(Troop troop)

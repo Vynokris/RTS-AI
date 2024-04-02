@@ -17,18 +17,19 @@ public class FiniteStateMachine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //for (int i = 0; i < currentState.GetConnections().Count; i++)
-        //{
-        //    if (currentState.GetConnections()[i].Trigger())
-        //    {
-        //        currentState.GetExitAction()?.Invoke(); // Call the state exit function as we are about to exit the current state
-        //        currentState = currentState.GetConnections()[i].GetDestinationNode();
-        //        currentState.GetEnterAction()?.Invoke(); // Call the state enter function of the new current state
-        //        break;
-        //    }
-        //}
+        for (int i = 0; i < currentState.GetConnections().Count; i++)
+        {
+            if (currentState.GetConnections()[i].Trigger())
+            {
+                currentState.GetExitAction()?.Invoke(); // Call the state exit function as we are about to exit the current state
+                currentState = currentState.GetConnections()[i].GetDestinationNode();
+                currentState.GetEnterAction()?.Invoke(); // Call the state enter function of the new current state
+                break;
+            }
+        }
 
-        //currentState.GetUpdateAction()?.Invoke();
+        currentState.GetUpdateAction()?.Invoke();
+        Debug.Log(currentState.GetName());
     }
 
     public void CreateState(string stateName, Action updateFunction = null, Action onStateEnter = null, Action onStateExit = null)
@@ -63,6 +64,16 @@ public class FiniteStateMachine : MonoBehaviour
         Connection newConnection = new Connection(GetState(toNodeId), transitionFunction);
 
         from.GetConnections().Add(newConnection);
+    }
+
+    public void ForceState(int id)
+    {
+        currentState = GetState(id);
+    }
+
+    public void ForceState(string stateName)
+    {
+        currentState = GetStateByName(stateName);
     }
 
     public string GetCurrentStateName()

@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 public class Troop : MonoBehaviour
 {
+    private static NavMeshTriangulation triangulation;
+
     [LabelOverride("Unit Type")] [SerializeField] protected TroopType serializedType;
     [SerializeField] protected SpriteRenderer selectionSprite;
 
@@ -16,6 +18,20 @@ public class Troop : MonoBehaviour
     
     public Faction owningFaction { get; private set; } = null;
     public TroopType type { get; private set; } = TroopType.Knight;
+
+    private void Awake()
+    {
+        stateMachine.CreateState("Idle");
+        stateMachine.CreateState("Navigate");
+        stateMachine.CreateState("Guard");
+        stateMachine.CreateState("Attack");
+
+        stateMachine.CreateConnection("Navigate", "Idle", HasReachedDestination);
+        stateMachine.CreateConnection("Guard", "Idle", HasReachedDestination);
+        stateMachine.CreateConnection("Attack", "Idle", HasReachedDestination);
+
+        stateMachine.CreateConnection("Idle", "Guard", IsGettingAttacked);
+    }
 
     public void Start()
     {
@@ -40,6 +56,16 @@ public class Troop : MonoBehaviour
     public void Deselect()
     {
         selectionSprite.gameObject.SetActive(false);
+    }
+
+    public NavMeshAgent GetAgent()
+    {
+        return agent;
+    }
+
+    public FiniteStateMachine GetStateMachine()
+    {
+        return stateMachine;
     }
 
     public float GetMaxSpeed()
@@ -67,4 +93,28 @@ public class Troop : MonoBehaviour
     {
         selectionSprite.color = color;
     }
+
+    #region StateConnections
+
+    private bool HasReachedDestination()
+    {
+        return agent.remainingDistance <= 0.1f && !agent.pathPending;
+    }
+
+    private bool IsNoThreatNearby()
+    {
+        return false; //TODO
+    }
+
+    private bool IsNoMoreTargetInRange()
+    {
+        return false; //TODO
+    }
+
+    private bool IsGettingAttacked()
+    {
+        return false; //TODO
+    }
+
+    #endregion
 }
