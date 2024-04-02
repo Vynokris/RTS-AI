@@ -61,4 +61,12 @@ public class Crowd
         }
         troops.Clear();
     }
+
+    public void ForceState(string stateName)
+    {
+        foreach (Troop troop in troops)
+        {
+            troop.GetStateMachine().ForceState(stateName);
+        }
+    }
 }
