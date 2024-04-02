@@ -4,15 +4,13 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[Serializable]
-public struct CursorParams
+[Serializable] public struct CursorParams
 {
     public Texture2D texture;
     public Vector2 hotspot;
 }
 
-[Serializable]
-public struct PlayerNecessaryGameObjects
+[Serializable] public struct PlayerNecessaryGameObjects
 {
     public RectTransform selectionBox;
     public TextMeshProUGUI cropsText;
@@ -36,6 +34,7 @@ public class Player : Faction
     private Plane   selectionDefaultPlane;
     private Vector3 selectionStartWorld;
     
+    private CostStorage costStorage;
     private Camera cam;
     private bool inBuildMode = false;
     private BuildingType currentlyPlacingBuilding = BuildingType.None;
@@ -43,6 +42,7 @@ public class Player : Faction
     public override void Start()
     {
         base.Start();
+        costStorage = FindObjectOfType<CostStorage>();
         cam = Camera.main;
         selectionDefaultPlane = new Plane(Vector3.up, Vector3.zero);
         
@@ -160,7 +160,8 @@ public class Player : Faction
             {
                 Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile"))
+                    && costStorage.GetBuilding(currentlyPlacingBuilding).TryPerform(ref crops, ref lumber, ref stone))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
                     tile.SetBuilding(currentlyPlacingBuilding);

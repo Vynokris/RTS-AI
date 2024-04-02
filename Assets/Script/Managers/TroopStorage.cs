@@ -4,21 +4,27 @@ using UnityEngine;
 
 public enum TroopType
 {
+    Knight,
+    Archer,
+    Cavalier,
     Golem,
-    Knight
 }
 
 public class TroopStorage : MonoBehaviour
 {
     [SerializeField] private GameObject knightPrefab;
+    [SerializeField] private GameObject archerPrefab;
+    [SerializeField] private GameObject cavalierPrefab;
     [SerializeField] private GameObject golemPrefab;
 
     public GameObject GetTroopPrefab(TroopType type)
     {
         return type switch
         {
-            TroopType.Golem => golemPrefab,
-            TroopType.Knight => knightPrefab,
+            TroopType.Knight   => knightPrefab,
+            TroopType.Archer   => archerPrefab,
+            TroopType.Cavalier => cavalierPrefab,
+            TroopType.Golem    => golemPrefab,
             _ => null
         };
     }
