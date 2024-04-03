@@ -84,6 +84,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &7656594455232740768
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4035810018717990954}
+  - component: {fileID: 2373168936737821707}
+  m_Layer: 12
+  m_Name: DetectionZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4035810018717990954
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7656594455232740768}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 710321609632168890}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &2373168936737821707
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7656594455232740768}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 2048
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 6135
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 40
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!1001 &1031650598716824657
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -474,6 +527,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6371046546855707008}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: ca4d2e03b5c59204fa09dc2222a14265,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4035810018717990954}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
         type: 3}
@@ -503,10 +560,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5079043087594181268}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7518321342432995925}
   m_SourcePrefab: {fileID: 100100000, guid: ca4d2e03b5c59204fa09dc2222a14265, type: 3}
 --- !u!1 &184719126140870912 stripped
 GameObject:
@@ -526,12 +579,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28463751e8872e84289361aedde33b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializedType: 0
   selectionSprite: {fileID: 8218659980640435080}
   agent: {fileID: 2117313744518594303}
   animator: {fileID: -4639396982949776440}
   stateMachine: {fileID: 4397071374817475783}
   blackBoard: {fileID: 2346776924639195495}
+  sphereTriggerLayer:
+    serializedVersion: 2
+    m_Bits: 4096
 --- !u!114 &2346776924639195495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -544,9 +599,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2f6d0abe1f8dc846859710bf0dfaa70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxLife: 10
-  range: 2
+  maxLife: 5
+  range: 0.6
   damage: 1
+  attackDelay: 2
 --- !u!114 &4397071374817475783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -651,27 +707,6 @@ CapsuleCollider:
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
---- !u!135 &7518321342432995925
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 184719126140870912}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 2039
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 4
   m_Center: {x: 0, y: 1, z: 0}
 --- !u!4 &710321609632168890 stripped
 Transform:

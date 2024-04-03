@@ -1,12 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Crowd
 {
     private Vector3 position;
     private float radius;
+
+    public bool crowdUnderAttack { get; private set; }= false;
 
     private readonly HashSet<Troop> troops = new();
     private float slowestTroopSpeed = float.MaxValue;
@@ -110,5 +113,21 @@ public class Crowd
         }
 
         radius = farthestTroopDistance;
+    }
+
+    public void SetCrowdUnderAttack()
+    {
+        crowdUnderAttack = true;
+    }
+
+    public void CheckIfCrowdUnderAttack()
+    {
+        foreach (var unit in troops)
+        {
+            if (unit.underAttack)
+                return;
+        }
+
+        crowdUnderAttack = false;
     }
 }

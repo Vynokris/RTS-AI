@@ -9,12 +9,17 @@ public class BlackBoard : MonoBehaviour
     [SerializeField] private float damage;
     [SerializeField] private float attackDelay;
 
-    private List<Troop> nearingEnemies = new();
+    private HashSet<Troop> nearingEnemies = new();
 
     private Troop target;
 
     protected float life;
     protected float maxSpeed;
+
+    private void Start()
+    {
+        life = maxLife;
+    }
 
     public float GetLife()
     {
@@ -41,8 +46,9 @@ public class BlackBoard : MonoBehaviour
         return attackDelay;
     }
 
-    public List<Troop> GetNearingEnemies()
+    public HashSet<Troop> GetNearingEnemies()
     {
+        nearingEnemies.RemoveWhere(item => item == null);
         return nearingEnemies;
     }
 

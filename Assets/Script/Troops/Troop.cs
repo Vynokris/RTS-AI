@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Troop : MonoBehaviour
 {
-    [LabelOverride("Unit Type")] [SerializeField] protected TroopType serializedType;
     [SerializeField] protected SpriteRenderer selectionSprite;
 
     [SerializeField] protected NavMeshAgent agent;
@@ -13,12 +13,17 @@ public class Troop : MonoBehaviour
 
     [SerializeField] protected FiniteStateMachine stateMachine;
     [SerializeField] protected BlackBoard blackBoard;
+
+    [SerializeField] protected LayerMask sphereTriggerLayer;
     
     public Faction owningFaction { get; private set; } = null;
     public TroopType type { get; private set; } = TroopType.Knight;
 
+    private Troop underAttackTroop;
     private float attackPathRefreshTimer = 1.0f;
     private float attackRefreshTimer = 0.0f;
+
+    public bool underAttack { get; private set; } = false;
 
     private void Awake()
     {
@@ -42,7 +47,6 @@ public class Troop : MonoBehaviour
     public void Update()
     {
         animator.SetFloat("Speed", agent.velocity.magnitude);
-        animator.SetBool("Attacking", false);
         attackRefreshTimer -= Time.deltaTime; //Here so that the attack cooldown isn't on pause if the player isn't attacking
     }
 
@@ -61,19 +65,21 @@ public class Troop : MonoBehaviour
         selectionSprite.gameObject.SetActive(false);
     }
 
-    public void Attack(Troop enemy)
+    public void Attack()
     {
-        enemy.TakeDamage(blackBoard.GetDamage());
+        if (underAttackTroop)
+            underAttackTroop.TakeDamage(blackBoard.GetDamage());
+
+        CheckEnemyDeath(underAttackTroop);
     }
 
     public void TakeDamage(float damage)
     {
         blackBoard.SetLife(blackBoard.GetLife() - damage);
-        Debug.Log(blackBoard.GetLife());
 
-        if (blackBoard.GetLife() < 0)
+        if (blackBoard.GetLife() <= 0)
         {
-            Destroy(gameObject); //TODO: Remove this troop's references
+            owningFaction.DestroyTroop(this);
         }
     }
 
@@ -118,39 +124,78 @@ public class Troop : MonoBehaviour
         selectionSprite.color = color;
     }
 
+    private void CheckEnemyDeath(Troop troop)
+    {
+        if (blackBoard.GetTarget() == null)
+        {
+
+        }
+    }
+
+    private void AdvanceToEnemy(HashSet<Troop> nearingEnemies)
+    {
+        attackPathRefreshTimer -= Time.deltaTime;
+
+        if (attackPathRefreshTimer <= 0.0f)
+        {
+            if (blackBoard.GetTarget())
+            {
+                agent.SetDestination(blackBoard.GetTarget().transform.position);
+                attackPathRefreshTimer = 1.0f;
+            }
+
+            else if (nearingEnemies.Count > 0)
+            {
+                blackBoard.SetTarget(nearingEnemies.FirstOrDefault());
+                agent.SetDestination(blackBoard.GetTarget().transform.position);
+                attackPathRefreshTimer = 1.0f;
+            }
+        }
+    }
+
     #region StateUpdate
 
     private void GuardState()
     {
-
-    }
-
-    private void AttackState()
-    {
-        List<Troop> nearingEnemies = blackBoard.GetNearingEnemies();
+        HashSet<Troop> nearingEnemies = blackBoard.GetNearingEnemies();
 
         if (nearingEnemies.Count > 0)
         {
             if (attackRefreshTimer <= 0.0f)
             {
-                if (Vector3.Distance(transform.position, nearingEnemies[0].transform.position) < blackBoard.GetRange())
+                if (Vector3.Distance(transform.position, nearingEnemies.FirstOrDefault().transform.position) < blackBoard.GetRange())
                 {
-                    animator.SetBool("Attacking", true);
-                    Attack(nearingEnemies[0]);
+                    animator.Play("Attack");
+                    underAttackTroop = nearingEnemies.FirstOrDefault();
                     attackRefreshTimer = blackBoard.GetAttackDelay();
                 }
+            }
+        }
+    }
+
+    private void AttackState()
+    {
+        HashSet<Troop> nearingEnemies = blackBoard.GetNearingEnemies();
+
+        if (nearingEnemies.Count > 0)
+        {
+            if (attackRefreshTimer <= 0.0f)
+            {
+                if (Vector3.Distance(transform.position, nearingEnemies.FirstOrDefault().transform.position) < blackBoard.GetRange())
+                {
+                    animator.Play("Attack");
+                    underAttackTroop = nearingEnemies.FirstOrDefault();
+                    attackRefreshTimer = blackBoard.GetAttackDelay();
+                }
+
+                else
+                    AdvanceToEnemy(nearingEnemies);
             }
         }
 
         else
         {
-            attackPathRefreshTimer -= Time.deltaTime;
-
-            if (attackPathRefreshTimer < 0.0f)
-            {
-                agent.SetDestination(blackBoard.GetTarget().transform.position);
-                attackPathRefreshTimer = 1.0f;
-            }
+            AdvanceToEnemy(nearingEnemies);
         }
     }
 
@@ -165,17 +210,17 @@ public class Troop : MonoBehaviour
 
     private bool IsNoThreatNearby()
     {
-        return false; //TODO
+        return !IsGettingAttacked();
     }
 
     private bool IsNoMoreTargetInRange()
     {
-        return false; //TODO
+        return !blackBoard.GetTarget() && blackBoard.GetNearingEnemies().Count == 0;
     }
 
     private bool IsGettingAttacked()
     {
-        return false; //TODO
+        return owningFaction.GetCrowd().crowdUnderAttack;
     }
 
     #endregion
@@ -184,19 +229,31 @@ public class Troop : MonoBehaviour
     {
         Troop troop = other.gameObject.GetComponent<Troop>();
 
-        if (troop.owningFaction == owningFaction)
+        if (sphereTriggerLayer == (sphereTriggerLayer | (1 << other.gameObject.layer)) || troop.owningFaction == owningFaction)
             return;
 
         blackBoard.GetNearingEnemies().Add(troop);
+
+        if (stateMachine.GetCurrentStateName().Equals("Attack"))
+            return;
+
+        underAttack = true;
+        owningFaction.GetCrowd().SetCrowdUnderAttack();
     }
 
     private void OnTriggerExit(Collider other)
     {
         Troop troop = other.gameObject.GetComponent<Troop>();
 
-        if (troop.owningFaction == owningFaction)
+        if (sphereTriggerLayer == (sphereTriggerLayer | (1 << other.gameObject.layer)) || troop.owningFaction == owningFaction)
             return;
 
         blackBoard.GetNearingEnemies().Remove(troop);
+
+        if (stateMachine.GetCurrentStateName().Equals("Attack"))
+            return;
+
+        underAttack = false;
+        owningFaction.GetCrowd().CheckIfCrowdUnderAttack();
     }
 }
