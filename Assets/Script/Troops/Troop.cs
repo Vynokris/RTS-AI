@@ -70,6 +70,21 @@ public class Troop : MonoBehaviour
         if (underAttackTroop)
             underAttackTroop.TakeDamage(blackBoard.GetDamage());
 
+        else
+        {
+            HashSet<Troop> enemies = blackBoard.GetNearingEnemies();
+
+            foreach (var enemy in enemies)
+            {
+                if (Vector3.Distance(transform.position, enemy.transform.position) < blackBoard.GetRange())
+                {
+                    underAttackTroop = enemy;
+                    underAttackTroop.TakeDamage(blackBoard.GetDamage());
+                    break;
+                }
+            }
+        }
+
         CheckEnemyDeath(underAttackTroop);
     }
 
