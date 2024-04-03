@@ -31,7 +31,10 @@ public class Faction : MonoBehaviour
         
         NavMesh.SamplePosition(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + .5f), out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
 
-        Troop troop = SpawnTroop(TroopType.Knight, navMeshHit.position);
+        for (int i = 0; i < 5; i++)
+        {
+            SpawnTroop(TroopType.Knight, navMeshHit.position);
+        }
     }
 
     public void TakeOwnership(Tile tile, bool setAsSpawn = false)
@@ -59,6 +62,12 @@ public class Faction : MonoBehaviour
     public void DestroyTroop(Troop troop)
     {
         troops.Remove(troop);
-        Destroy(troop);
+        crowd.RemoveTroop(troop);
+        Destroy(troop.gameObject);
+    }
+
+    public Crowd GetCrowd()
+    {
+        return crowd;
     }
 }

@@ -119,7 +119,7 @@ public class Player : Faction
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             
-            if (Physics.Raycast(ray, out var hit))
+            if (Physics.Raycast(ray, out var hit, float.MaxValue, -5, QueryTriggerInteraction.Ignore))
             {
                 hit.collider.gameObject.TryGetComponent(out Troop possibleTroop);
 
