@@ -37,6 +37,8 @@ public class Faction : MonoBehaviour
             SpawnTroop(TroopType.Knight, navMeshHit.position);
             SpawnTroop(TroopType.Archer, navMeshHit.position);
         }
+
+        crowd.SetCoordinator(Instantiate(troopStorage.GetTroopPrefab(TroopType.Coordinator)));
     }
 
     public void TakeOwnership(Tile tile, bool setAsSpawn = false)

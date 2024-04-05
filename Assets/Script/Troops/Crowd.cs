@@ -3,9 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Crowd
 {
+    private GameObject coordinatorPrefab;
+
     private Vector3 position;
     private float radius;
 
@@ -50,10 +53,12 @@ public class Crowd
 
     public void SetCrowdDestination(Vector3 destination)
     {
-        foreach (var unit in troops)
-        {
-            unit.SetDestination(destination);
-        }
+        //foreach (var unit in troops)
+        //{
+        //    unit.SetDestination(destination);
+        //}
+
+        coordinatorPrefab.GetComponent<NavMeshAgent>().SetDestination(destination);
     }
 
     public void AddTroop(Troop troop)
@@ -113,6 +118,11 @@ public class Crowd
         }
 
         radius = farthestTroopDistance;
+    }
+
+    public void SetCoordinator(GameObject coordinator)
+    {
+        coordinatorPrefab = coordinator;
     }
 
     public void SetCrowdUnderAttack()
