@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 public class Faction : MonoBehaviour
 {
+    [SerializeField] protected Crowd crowd;
+
     protected static uint maxID = 0;
     public const uint unassignedID = uint.MaxValue;
     
@@ -17,7 +19,6 @@ public class Faction : MonoBehaviour
     public Tile spawnTile { get; protected set; } = null;
     protected List<Tile> ownedTiles = new();
 
-    protected Crowd crowd = new();
     protected List<Troop> troops = new();
     
     protected TroopStorage troopStorage;

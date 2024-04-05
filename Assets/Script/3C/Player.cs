@@ -111,6 +111,7 @@ public class Player : Faction
         {
             objectRefs.selectionBox.sizeDelta = Vector2.zero;
             objectRefs.selectionBox.gameObject.SetActive(false);
+            crowd.ComputeCrowdSize();
             crowd.ComputeSlowestTroopSpeed();
             crowd.LimitCrowdSpeedToSlowest();
         }

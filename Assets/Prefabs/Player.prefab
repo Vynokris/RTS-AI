@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8518651447194864271}
   - component: {fileID: 6887149259712004252}
+  - component: {fileID: 7618849341865351951}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -44,13 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 702b994406416254c96f4901cfbdb3a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  crowd: {fileID: 7618849341865351951}
   designation: Player
   color: {r: 0.022014773, g: 0.0047169924, b: 1, a: 1}
   crops: 10
   lumber: 10
   stone: 10
-  spawnTile: {fileID: 0}
-  ownedTiles: []
   defaultCursor:
     texture: {fileID: 2800000, guid: b86bb253050622440a9d3b207ecb90c8, type: 3}
     hotspot: {x: 5, y: 4}
@@ -60,7 +60,17 @@ MonoBehaviour:
   attackCursor:
     texture: {fileID: 2800000, guid: 21a4105c2e4c1c94ebc3fe62fb52be7a, type: 3}
     hotspot: {x: 4, y: 4}
-  selectionBox: {fileID: 0}
-  UnitLayer:
-    serializedVersion: 2
-    m_Bits: 0
+--- !u!114 &7618849341865351951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2155017811794067266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db15a4216f59ca742b7252c25f2b343a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coordinatorPrefab: {fileID: 184719126140870912, guid: fa59a5e500222d34b9d126a2f99aabb7,
+    type: 3}
