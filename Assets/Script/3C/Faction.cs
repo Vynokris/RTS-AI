@@ -43,7 +43,7 @@ public class Faction : MonoBehaviour
         ownedTiles.Add(tile);
         if (setAsSpawn) spawnTile = tile;
         
-        // FindObjectOfType<InfluenceManager>().AddBuilding((int)id, tile.transform.position);
+        FindObjectOfType<InfluenceManager>().AddBuilding((int)id, tile.transform.position);
     }
 
     public void RemoveOwnership(Tile tile)

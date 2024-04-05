@@ -90,7 +90,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         // Set tile height and create props/resources.
-        List<Vector3> resourcePositions = new();
+        List<Tuple<ResourceType, Vector3>> naturalResources = new();
         foreach (var tile in tiles)
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
@@ -105,14 +105,13 @@ public class MapGenerator : MonoBehaviour
             tile.SetType(tileType);
 
             if (SetTileResource(tile)) {
-                resourcePositions.Add(tile.transform.position);
+                naturalResources.Add(new Tuple<ResourceType, Vector3>(tile.resourceType, tile.transform.position));
             }
             else {
                 SetTileProp(tile);
             }
         }
-        
-        // FindObjectOfType<InfluenceManager>().SetNaturalResources(resourcePositions);
+        FindObjectOfType<InfluenceManager>().SetNaturalResources(naturalResources);
         
         // Set the spawn locations of all players.
         float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
