@@ -136,8 +136,22 @@ public class Player : Faction
         if (Input.GetMouseButtonDown(1))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out var hit)) {
-                crowd.SetCrowdDestination(hit.point);
+            
+            if (Physics.Raycast(ray, out var hit, float.MaxValue, -5, QueryTriggerInteraction.Ignore))
+            {
+                hit.collider.gameObject.TryGetComponent(out Troop possibleTroop);
+
+                if (possibleTroop && possibleTroop?.owningFaction.id != id)
+                {
+                    crowd.ForceState("Attack");
+                    crowd.SetCrowdTarget(possibleTroop);
+                }
+
+                else
+                {
+                    crowd.ForceState("Navigate");
+                    crowd.SetCrowdDestination(hit.point);
+                }
             }
         }
     }

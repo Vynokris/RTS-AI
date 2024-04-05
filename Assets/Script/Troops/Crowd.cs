@@ -1,10 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Crowd
 {
+    private Vector3 position;
+    private float radius;
+
+    public bool crowdUnderAttack { get; private set; }= false;
+
     private readonly HashSet<Troop> troops = new();
     private float slowestTroopSpeed = float.MaxValue;
 
@@ -34,6 +40,14 @@ public class Crowd
         SetCrowdSpeed(slowestTroopSpeed);
     }
 
+    public void SetCrowdTarget(Troop target)
+    {
+        foreach (var unit in troops)
+        {
+            unit.GetBlackBoard().SetTarget(target);
+        }
+    }
+
     public void SetCrowdDestination(Vector3 destination)
     {
         foreach (var unit in troops)
@@ -60,5 +74,60 @@ public class Crowd
             troop.Deselect();
         }
         troops.Clear();
+    }
+
+    public void ForceState(string stateName)
+    {
+        foreach (Troop troop in troops)
+        {
+            troop.GetStateMachine().ForceState(stateName);
+        }
+    }
+
+    public void ComputeCrowdSize()
+    {
+        float sumX = 0.0f, sumZ = 0.0f;
+        float farthestTroopDistance = 0.0f;
+
+        foreach (var troop in troops)
+        {
+            sumX += troop.transform.position.x;
+            sumZ += troop.transform.position.z;
+        }
+
+        float middleX = sumX / troops.Count;
+        float middleZ = sumZ / troops.Count;
+
+        position.x = middleX;
+        position.z = middleZ;
+
+        foreach (var troop in troops)
+        {
+            float deltaX = troop.transform.position.x - position.x;
+            float deltaZ = troop.transform.position.z - position.z;
+
+            float distance = Mathf.Sqrt(deltaX * deltaX + deltaZ * deltaZ);
+
+            if (distance > farthestTroopDistance)
+                farthestTroopDistance = distance;
+        }
+
+        radius = farthestTroopDistance;
+    }
+
+    public void SetCrowdUnderAttack()
+    {
+        crowdUnderAttack = true;
+    }
+
+    public void CheckIfCrowdUnderAttack()
+    {
+        foreach (var unit in troops)
+        {
+            if (unit.underAttack)
+                return;
+        }
+
+        crowdUnderAttack = false;
     }
 }

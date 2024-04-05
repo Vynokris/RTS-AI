@@ -112,7 +112,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
         
-        FindObjectOfType<InfluenceManager>().SetNaturalResources(resourcePositions);
+        // FindObjectOfType<InfluenceManager>().SetNaturalResources(resourcePositions);
         
         // Set the spawn locations of all players.
         float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
