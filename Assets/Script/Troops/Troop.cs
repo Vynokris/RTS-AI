@@ -190,6 +190,7 @@ public class Troop : MonoBehaviour
             {
                 if (Vector3.Distance(transform.position, nearingEnemies.FirstOrDefault().transform.position) < blackBoard.GetRange())
                 {
+                    agent.ResetPath();
                     animator.Play("Attack");
                     underAttackTroop = nearingEnemies.FirstOrDefault();
                     attackRefreshTimer = blackBoard.GetAttackDelay();

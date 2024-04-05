@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 public class Faction : MonoBehaviour
 {
-    [SerializeField] protected Crowd crowd;
+    protected Crowd crowd = new();
 
     protected static uint maxID = 0;
     public const uint unassignedID = uint.MaxValue;
@@ -32,9 +32,10 @@ public class Faction : MonoBehaviour
         
         NavMesh.SamplePosition(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + .5f), out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
             SpawnTroop(TroopType.Knight, navMeshHit.position);
+            SpawnTroop(TroopType.Archer, navMeshHit.position);
         }
     }
 
