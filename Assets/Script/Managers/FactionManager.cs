@@ -16,12 +16,14 @@ public class FactionManager : MonoBehaviour
     private void Start()
     {
         Player player = Instantiate(playerGameObject).GetComponent<Player>();
+        player.AssignID(0);
         factions.Add(player.GetID(), player);
         playerFaction = player;
 
-        for (int i = 1; i < playerCount; i++)
+        for (uint i = 1; i < playerCount; i++)
         {
             Faction ai = Instantiate(aiGameObject).GetComponent<Faction>();
+            ai.AssignID(i);
             factions.Add(ai.GetID(), ai);
         }
 

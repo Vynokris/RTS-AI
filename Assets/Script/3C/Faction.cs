@@ -4,7 +4,6 @@ using UnityEngine.AI;
 
 public class Faction : MonoBehaviour
 {
-    protected static uint maxID = 0;
     public const uint unassignedID = uint.MaxValue;
     
     public uint id { get; private set; }
@@ -21,7 +20,7 @@ public class Faction : MonoBehaviour
     
     protected TroopStorage troopStorage;
 
-    public Faction() { id = maxID++; }
+    public Faction() { id = unassignedID; }
     public uint GetID() { return id; }
 
     public virtual void Start()
@@ -35,12 +34,16 @@ public class Faction : MonoBehaviour
             SpawnTroop(TroopType.Golem,  navMeshHit.position + Vector3.up);
         }
     }
+    
+    public void AssignID(uint _id) { if (id is unassignedID) id = _id; }
 
     public void TakeOwnership(Tile tile, bool setAsSpawn = false)
     {
         tile.SetFaction(this);
         ownedTiles.Add(tile);
         if (setAsSpawn) spawnTile = tile;
+        
+        FindObjectOfType<InfluenceManager>().AddBuilding((int)id, tile.transform.position);
     }
 
     public void RemoveOwnership(Tile tile)
