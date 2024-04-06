@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4141065677346758498
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8894132149454352216}
+  - component: {fileID: 6967248384953174982}
+  m_Layer: 0
+  m_Name: CostStorage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8894132149454352216
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4141065677346758498}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6967248384953174982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4141065677346758498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa62547ea361a0d40a35f084ed30feba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildingCastle:
+    crops: 0
+    lumber: 100
+    stone: 100
+  buildingBarracks:
+    crops: 0
+    lumber: 10
+    stone: 10
+  buildingFarm:
+    crops: 0
+    lumber: 5
+    stone: 5
+  buildingLumbermill:
+    crops: 0
+    lumber: 2
+    stone: 8
+  buildingMine:
+    crops: 0
+    lumber: 8
+    stone: 2
+  troopKnight:
+    crops: 5
+    lumber: 0
+    stone: 0
+  troopArcher:
+    crops: 8
+    lumber: 0
+    stone: 0
+  troopCavalier:
+    crops: 15
+    lumber: 0
+    stone: 0
+  troopGolem:
+    crops: 25
+    lumber: 0
+    stone: 5

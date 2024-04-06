@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum TileType
@@ -36,8 +37,8 @@ public enum BuildingType
     Farm,
     Lumbermill,
     Mine,
-    Castle,
     Barracks,
+    Castle,
 }
 
 
@@ -50,13 +51,14 @@ public class Tile : MonoBehaviour
     public BuildingType buildingType  { get; private set; } = BuildingType.None;
     public GameObject   prop          { get; private set; } = null;
     public GameObject   resource      { get; private set; } = null;
-    public GameObject   building      { get; private set; } = null;
+    public Building     building      { get; private set; } = null;
     [HideInInspector] public float noiseHeight = 0.0f;
     
     [SerializeField] private GameObject propPrefab;
     [SerializeField] private GameObject resourcePrefab;
     [SerializeField] private GameObject buildingPrefab;
-    [SerializeField] private float resourceProductionPerSecond = .2f;
+    [SerializeField] private GameObject resourceBuildingPrefab;
+    [SerializeField] private GameObject barracksBuildingPrefab;
     
     private MeshFilter  meshFilter;
     private MeshStorage meshStorage;
@@ -64,26 +66,6 @@ public class Tile : MonoBehaviour
     public void Start()
     {
         enabled = false;
-    }
-
-    public void Update()
-    {
-        if (owningFaction is null) return;
-        switch (buildingType)
-        {
-            case BuildingType.Farm:
-                owningFaction.crops += resourceProductionPerSecond * Time.deltaTime;
-                break;
-            case BuildingType.Lumbermill:
-                owningFaction.lumber += resourceProductionPerSecond * Time.deltaTime;
-                break;
-            case BuildingType.Mine:
-                owningFaction.stone += resourceProductionPerSecond * Time.deltaTime;
-                break;
-            case BuildingType.Barracks:
-                // TODO: Spawn soldiers.
-                break;
-        }
     }
 
     public void FindMeshFilter()
@@ -99,8 +81,8 @@ public class Tile : MonoBehaviour
     public float GetTileHeight()
     {
         return type == TileType.Water
-            ? (gameObject.transform.localScale.y / 100 * 0.1f) - 0.1f
-            : (gameObject.transform.localScale.y / 100 * 0.2f) - 0.2f;
+            ? gameObject.transform.localScale.y / 100 * 0.1f - 0.1f
+            : gameObject.transform.localScale.y / 100 * 0.2f - 0.2f;
     }
 
     public void SetFaction(Faction faction)
@@ -116,10 +98,10 @@ public class Tile : MonoBehaviour
             gameObject.layer = LayerMask.NameToLayer("MapTileBlocking");
     }
 
-    public bool SetProp(Mesh propMesh)
+    public bool TrySetProp(Mesh propMesh)
     {
         if (resource is not null || building is not null) return false;
-        if (prop is not null) { Destroy(prop); }
+        if (prop is not null) { Destroy(prop); prop = null; }
         
         prop = Instantiate(propPrefab, transform.parent);
         prop.GetComponent<MeshFilter>().mesh = propMesh;
@@ -144,10 +126,10 @@ public class Tile : MonoBehaviour
         return true;
     }
 
-    public bool SetResource(ResourceType _resourceType)
+    public bool TrySetResource(ResourceType _resourceType)
     {
         if (prop is not null || building is not null) return false;
-        if (resource is not null) { Destroy(resource.gameObject); }
+        if (resource is not null) { Destroy(resource); resource = null; }
         
         resourceType = _resourceType;
         resource = Instantiate(resourcePrefab, transform.parent);
@@ -157,10 +139,10 @@ public class Tile : MonoBehaviour
         return true;
     }
 
-    public bool SetBuilding(BuildingType _buildingType)
+    public bool CanSetBuilding(BuildingType _buildingType)
     {
         // Check building: return if a building exists already, return if building can't be placed on tile.
-        if (building is not null) { return false; }
+        if (buildingType != BuildingType.None || building is not null) { return false; }
         switch (_buildingType)
         {
             case BuildingType.Farm when type is not TileType.Grass:
@@ -169,53 +151,90 @@ public class Tile : MonoBehaviour
                 return false;
         }
 
-        // Check the prop: return if unbreakable, else destroy prop.
-        switch (propType)
-        {
-            case PropType.Unbreakable:
-                return false;
-            case PropType.Breakable when prop is not null:
-                Destroy(prop);
-                propType = PropType.None;
-                break;
+        // Check the prop: return if unbreakable.
+        if (propType is PropType.Unbreakable) {
+            return false;
         }
         
-        // Check resource: destroy resource if building corresponds, else return.
+        // Check resource: make sure the building corresponds.
         if (resourceType is ResourceType.Lumber or ResourceType.Stone)
         {
-            if ((int)resourceType == (int)_buildingType) {
-                resourceType = ResourceType.None;
-                Destroy(resource);
-            }
-            else {
+            if ((int)resourceType != (int)_buildingType) {
                 return false;
             }
         }
+        return true;
+    }
+
+    /// Should only ever be used if CanSetBuilding returns true.
+    public void ForceSetBuilding(BuildingType _buildingType)
+    {
+        // Destroy the building if it exists.
+        if (building is not null)
+        {
+            Destroy(building);
+            building = null;
+            buildingType = BuildingType.None;
+        }
         
+        // Destroy the prop if it exists.
+        if (prop is not null)
+        {
+            Destroy(prop);
+            prop = null;
+            propType = PropType.None;
+        }
+        
+        // Destroy the resource if it exists.
+        if (resource is not null)
+        {
+            Destroy(resource);
+            resource = null;
+            resourceType = ResourceType.None;
+        }
+        
+        // Create the building.
         buildingType = _buildingType;
-        building = Instantiate(buildingPrefab, transform.parent);
+        GameObject instantiatedBuilding = buildingType switch
+        {
+            BuildingType.Farm or BuildingType.Lumbermill or BuildingType.Mine => resourceBuildingPrefab,
+            BuildingType.Barracks => barracksBuildingPrefab,
+            _ => buildingPrefab
+        };
+        building = Instantiate(instantiatedBuilding, transform.parent).GetComponent<Building>();
+        building.SetOwningTile(this);
         building.GetComponent<MeshFilter>().mesh = meshStorage.GetBuilding(buildingType);
         building.transform.position  += new Vector3(0, GetTileHeight(), 0);
         building.transform.localScale = new Vector3(100, 100, 100);
         if (buildingType is BuildingType.Farm or BuildingType.Lumbermill or BuildingType.Mine)
             enabled = true;
+    }
+
+    public bool TrySetBuilding(BuildingType _buildingType)
+    {
+        if (!CanSetBuilding(_buildingType)) {
+            return false;
+        }
+        ForceSetBuilding(_buildingType);
         return true;
     }
 
     public void RemoveBuilding()
     {
-        if (building is not null)
+        if (building is not null) {
             Destroy(building);
+            building = null;
+        }
 
         BuildingType prevBuildingType = buildingType;
         buildingType = BuildingType.None;
         switch (prevBuildingType)
         {
             case BuildingType.Lumbermill:
-                SetResource(ResourceType.Lumber);
+                TrySetResource(ResourceType.Lumber);
                 break;
             case BuildingType.Mine:
-                SetResource(ResourceType.Stone);
+                TrySetResource(ResourceType.Stone);
                 break;
         }
         

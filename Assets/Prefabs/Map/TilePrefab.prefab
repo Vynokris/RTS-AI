@@ -86,6 +86,10 @@ MonoBehaviour:
     type: 3}
   buildingPrefab: {fileID: 1431532903868658292, guid: 84450004f9be85748972056338b026ea,
     type: 3}
+  resourceBuildingPrefab: {fileID: 1431532903868658292, guid: 2854d1f97dc89c54b907579cdb9c59f9,
+    type: 3}
+  barracksBuildingPrefab: {fileID: 1431532903868658292, guid: ae7d507b36f3c2f4db9922de53d8810b,
+    type: 3}
 --- !u!33 &8666569142456084336
 MeshFilter:
   m_ObjectHideFlags: 0

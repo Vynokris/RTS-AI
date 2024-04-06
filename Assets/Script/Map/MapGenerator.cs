@@ -90,6 +90,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         // Set tile height and create props/resources.
+        List<Vector3> resourcePositions = new();
         foreach (var tile in tiles)
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
@@ -103,9 +104,15 @@ public class MapGenerator : MonoBehaviour
 
             tile.SetType(tileType);
 
-            if (!SetTileResource(tile))
+            if (SetTileResource(tile)) {
+                resourcePositions.Add(tile.transform.position);
+            }
+            else {
                 SetTileProp(tile);
+            }
         }
+        
+        // FindObjectOfType<InfluenceManager>().SetNaturalResources(resourcePositions);
         
         // Set the spawn locations of all players.
         float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
@@ -133,7 +140,7 @@ public class MapGenerator : MonoBehaviour
                     if (isFarEnough) spawnTile = randTile;
                 }
             }
-            spawnTile.SetBuilding(BuildingType.Castle);
+            spawnTile.TrySetBuilding(BuildingType.Castle);
             factions[i].TakeOwnership(spawnTile, true);
         }
         
@@ -185,7 +192,7 @@ public class MapGenerator : MonoBehaviour
         if (!spawnProp) return false;
         
         int random = Random.Range(0, propMeshes.Count);
-        return tile.SetProp(propMeshes[random]);
+        return tile.TrySetProp(propMeshes[random]);
     }
 
     private bool SetTileResource(Tile tile)
@@ -201,7 +208,7 @@ public class MapGenerator : MonoBehaviour
         };
         if (resourceType is ResourceType.None) return false;
 
-        return tile.SetResource(resourceType);
+        return tile.TrySetResource(resourceType);
     }
 
     void LevelWater(Tile tile)

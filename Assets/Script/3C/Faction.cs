@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -7,7 +6,6 @@ public class Faction : MonoBehaviour
 {
     protected Crowd crowd = new();
 
-    protected static uint maxID = 0;
     public const uint unassignedID = uint.MaxValue;
     
     public uint id { get; private set; }
@@ -23,7 +21,7 @@ public class Faction : MonoBehaviour
     
     protected TroopStorage troopStorage;
 
-    public Faction() { id = maxID++; }
+    public Faction() { id = unassignedID; }
     public uint GetID() { return id; }
 
     public virtual void Start()
@@ -40,12 +38,16 @@ public class Faction : MonoBehaviour
 
         crowd.SetCoordinator(Instantiate(troopStorage.GetTroopPrefab(TroopType.Coordinator), navMeshHit.position, Quaternion.identity));
     }
+    
+    public void AssignID(uint _id) { if (id is unassignedID) id = _id; }
 
     public void TakeOwnership(Tile tile, bool setAsSpawn = false)
     {
         tile.SetFaction(this);
         ownedTiles.Add(tile);
         if (setAsSpawn) spawnTile = tile;
+        
+        // FindObjectOfType<InfluenceManager>().AddBuilding((int)id, tile.transform.position);
     }
 
     public void RemoveOwnership(Tile tile)
