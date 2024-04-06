@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 public class Faction : MonoBehaviour
 {
+    protected Crowd crowd = new();
+
     protected static uint maxID = 0;
     public const uint unassignedID = uint.MaxValue;
     
@@ -17,7 +19,6 @@ public class Faction : MonoBehaviour
     public Tile spawnTile { get; protected set; } = null;
     protected List<Tile> ownedTiles = new();
 
-    protected Crowd crowd = new();
     protected List<Troop> troops = new();
     
     protected TroopStorage troopStorage;
@@ -31,10 +32,13 @@ public class Faction : MonoBehaviour
         
         NavMesh.SamplePosition(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + .5f), out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
             SpawnTroop(TroopType.Knight, navMeshHit.position);
+            SpawnTroop(TroopType.Archer, navMeshHit.position);
         }
+
+        crowd.SetCoordinator(Instantiate(troopStorage.GetTroopPrefab(TroopType.Coordinator), navMeshHit.position, Quaternion.identity));
     }
 
     public void TakeOwnership(Tile tile, bool setAsSpawn = false)

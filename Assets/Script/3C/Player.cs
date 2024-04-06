@@ -111,10 +111,21 @@ public class Player : Faction
         {
             objectRefs.selectionBox.sizeDelta = Vector2.zero;
             objectRefs.selectionBox.gameObject.SetActive(false);
+            crowd.RepositionCoordinator();
             crowd.ComputeSlowestTroopSpeed();
             crowd.LimitCrowdSpeedToSlowest();
         }
-        
+
+        else if (Input.GetKeyDown(KeyCode.L)) // TODO: Implement this in a better way
+        {
+            crowd.SetFormation(Formation.Square);
+        }
+
+        else if (Input.GetKeyDown(KeyCode.P)) // TODO: Implement this in a better way
+        {
+            crowd.SetFormation(Formation.Circle);
+        }
+
         if (Input.GetMouseButtonDown(1))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
