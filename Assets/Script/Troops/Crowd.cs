@@ -8,13 +8,11 @@ using UnityEngine.AI;
 public class Crowd
 {
     private GameObject coordinatorPrefab;
-
-    private Vector3 position;
-    private float radius;
+    private Coordinator coordinator;
 
     public bool crowdUnderAttack { get; private set; }= false;
 
-    private readonly HashSet<Troop> troops = new();
+    private HashSet<Troop> troops = new();
     private float slowestTroopSpeed = float.MaxValue;
 
     public void ComputeSlowestTroopSpeed()
@@ -58,7 +56,7 @@ public class Crowd
         //    unit.SetDestination(destination);
         //}
 
-        coordinatorPrefab.GetComponent<NavMeshAgent>().SetDestination(destination);
+        coordinator.GetAgent().SetDestination(destination);
     }
 
     public void AddTroop(Troop troop)
@@ -89,40 +87,21 @@ public class Crowd
         }
     }
 
-    public void ComputeCrowdSize()
+    public void RepositionCoordinator()
     {
-        float sumX = 0.0f, sumZ = 0.0f;
-        float farthestTroopDistance = 0.0f;
-
-        foreach (var troop in troops)
-        {
-            sumX += troop.transform.position.x;
-            sumZ += troop.transform.position.z;
-        }
-
-        float middleX = sumX / troops.Count;
-        float middleZ = sumZ / troops.Count;
-
-        position.x = middleX;
-        position.z = middleZ;
-
-        foreach (var troop in troops)
-        {
-            float deltaX = troop.transform.position.x - position.x;
-            float deltaZ = troop.transform.position.z - position.z;
-
-            float distance = Mathf.Sqrt(deltaX * deltaX + deltaZ * deltaZ);
-
-            if (distance > farthestTroopDistance)
-                farthestTroopDistance = distance;
-        }
-
-        radius = farthestTroopDistance;
+        coordinator.ComputeCrowdSize();
     }
 
     public void SetCoordinator(GameObject coordinator)
     {
         coordinatorPrefab = coordinator;
+        this.coordinator = coordinatorPrefab.GetComponent<Coordinator>();
+        this.coordinator.SetTroopRef(ref troops);
+    }
+
+    public void SetFormation(Formation formation)
+    {
+        coordinator.SetFormation(formation);
     }
 
     public void SetCrowdUnderAttack()
