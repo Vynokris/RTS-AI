@@ -49,8 +49,6 @@ MonoBehaviour:
   crops: 10
   lumber: 10
   stone: 10
-  spawnTile: {fileID: 0}
-  ownedTiles: []
   defaultCursor:
     texture: {fileID: 2800000, guid: b86bb253050622440a9d3b207ecb90c8, type: 3}
     hotspot: {x: 5, y: 4}
@@ -60,7 +58,3 @@ MonoBehaviour:
   attackCursor:
     texture: {fileID: 2800000, guid: 21a4105c2e4c1c94ebc3fe62fb52be7a, type: 3}
     hotspot: {x: 4, y: 4}
-  selectionBox: {fileID: 0}
-  UnitLayer:
-    serializedVersion: 2
-    m_Bits: 0

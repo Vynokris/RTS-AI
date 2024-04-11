@@ -1,14 +1,18 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using RawTextureDataProcessing;
 using Unity.Collections;
-using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
+
+// NOTES:
+// We are using textures to easily spread influence of resources, buildings and troops to neighbouring tiles.
+// For all influence maps:
+//      - red channel: player influence
+//      - green channel: AI influence
+//      - blue channel (only for resource influence textures): unclaimed resources
 
 public class InfluenceManager : MonoBehaviour
 {
@@ -37,23 +41,31 @@ public class InfluenceManager : MonoBehaviour
         textureToWorld = mapGenerator.GetMapSize().x / textureSize.x;
         
         emptyPixelData = Enumerable.Repeat((byte)0, (int)(textureSize.x * textureSize.y * 4)).ToArray();
-        List<Texture2D> allTextures = new List<Texture2D> {
-            resourcesInfluence[0], resourcesInfluence[1],
-            buildingsInfluence[0], buildingsInfluence[1], troopsInfluence
-        };
-        for (int i = 0; i < allTextures.Count; i++)
-        {
-            allTextures[i] = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
-            allTextures[i].filterMode = FilterMode.Point;
-            allTextures[i].SetPixelData(emptyPixelData, 0);
-        }
+        
+        resourcesInfluence[0] = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
+        resourcesInfluence[1] = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
+        buildingsInfluence[0] = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
+        buildingsInfluence[1] = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
+        troopsInfluence       = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
+        
+        resourcesInfluence[0].filterMode = FilterMode.Point;
+        resourcesInfluence[1].filterMode = FilterMode.Point;
+        buildingsInfluence[0].filterMode = FilterMode.Point;
+        buildingsInfluence[1].filterMode = FilterMode.Point;
+        troopsInfluence      .filterMode = FilterMode.Point;
+        
+        resourcesInfluence[0].SetPixelData(emptyPixelData, 0);
+        resourcesInfluence[1].SetPixelData(emptyPixelData, 0);
+        buildingsInfluence[0].SetPixelData(emptyPixelData, 0);
+        buildingsInfluence[1].SetPixelData(emptyPixelData, 0);
+        troopsInfluence      .SetPixelData(emptyPixelData, 0);
         
         blurRenderTexture = new RenderTexture((int)textureSize.x, (int)textureSize.y, 0);
         blurRenderTexture.format = RenderTextureFormat.ARGB32;
         blurRenderTexture.enableRandomWrite = true;
         blurRenderTexture.Create();
         
-        rawImageTest.texture = resourcesInfluence[1];
+        rawImageTest.texture = buildingsInfluence[1];
     }
 
     public Vector2 WorldToTexture(Vector3 worldCoords)
@@ -88,22 +100,20 @@ public class InfluenceManager : MonoBehaviour
         dtsTex.Apply();
     }
 
-    public void SetNaturalResources(List<Tuple<ResourceType, Vector3>> resources)
+    /// Use only once to setup natural resource influence.
+    public void SetNaturalResources(List<Vector3> resourcesPositions)
     {
         var timer = new Stopwatch();
         timer.Start();
         
         NativeArray<byte> pixelData = resourcesInfluence[0].GetPixelData<byte>(0);
-        foreach (Tuple<ResourceType, Vector3> tuple in resources)
+        foreach (Vector3 resourcePos in resourcesPositions)
         {
-            ResourceType resourceType = tuple.Item1;
-            Vector3      resourcePos  = tuple.Item2;
-            
             Vector2 texCoords = WorldToTexture(resourcePos);
             int arrayIdx = TextureToArray(texCoords, resourcesInfluence[0].width);
             
-            pixelData[arrayIdx+(int)resourceType-1] = 255;
-            pixelData[arrayIdx+3] = 255;
+            pixelData[arrayIdx+2] = 255; // Unclaimed natural resource.
+            pixelData[arrayIdx+3] = 255; // TEMP
         }
         
         resourcesInfluence[0].Apply();
@@ -114,25 +124,46 @@ public class InfluenceManager : MonoBehaviour
     }
 
     /// Do not use in a loop!
-    public void ClaimResource(int factionID, Vector3 position)
+    public void ClaimResource(uint factionID, Vector3 position)
     {
         NativeArray<byte> pixelData = resourcesInfluence[0].GetPixelData<byte>(0);
         Vector2 texCoords = WorldToTexture(position);
         int arrayIdx = TextureToArray(texCoords, resourcesInfluence[0].width);
         
-        pixelData[arrayIdx + factionID] = 255;
-        pixelData[arrayIdx + 3]         = 255;
+        pixelData[arrayIdx+(int)factionID] = 255;
+        pixelData[arrayIdx+2] = 0; // Remove unclaimed natural resource.
+        pixelData[arrayIdx+3] = 255; // TEMP
+        
+        resourcesInfluence[0].Apply();
+        BlurTexture(resourcesInfluence[0], resourcesInfluence[1]);
     }
 
     /// Do not use in a loop!
-    public void AddBuilding(int factionID, Vector3 position)
+    public void UnclaimResource(Vector3 position)
+    {
+        NativeArray<byte> pixelData = resourcesInfluence[0].GetPixelData<byte>(0);
+        Vector2 texCoords = WorldToTexture(position);
+        int arrayIdx = TextureToArray(texCoords, resourcesInfluence[0].width);
+        
+        pixelData[arrayIdx  ] = 0; // Remove claim on resource.
+        pixelData[arrayIdx+1] = 0;
+        pixelData[arrayIdx+2] = 255; // Set unclaimed natural resource.
+        pixelData[arrayIdx+3] = 255; // TEMP
+        
+        resourcesInfluence[0].Apply();
+        BlurTexture(resourcesInfluence[0], resourcesInfluence[1]);
+    }
+
+    /// Do not use in a loop!
+    public void AddBuilding(uint factionID, Vector3 position)
     {
         NativeArray<byte> pixelData = buildingsInfluence[0].GetPixelData<byte>(0);
         Vector2 texCoords = WorldToTexture(position);
         int arrayIdx = TextureToArray(texCoords, buildingsInfluence[0].width);
         
-        pixelData[arrayIdx + factionID] = 255;
-        pixelData[arrayIdx + 3]         = 255;
+        pixelData[arrayIdx+(int)factionID] = 255;
+        pixelData[arrayIdx+3] = 255; // TEMP
+        
         buildingsInfluence[0].Apply();
         BlurTexture(buildingsInfluence[0], buildingsInfluence[1]);
     }
@@ -146,26 +177,27 @@ public class InfluenceManager : MonoBehaviour
         
         for (int i = 0; i < 4; i++)
             pixelData[arrayIdx + i] = 0;
+        
         buildingsInfluence[0].Apply();
         BlurTexture(buildingsInfluence[0], buildingsInfluence[1]);
     }
     
     /// Do not use every frame!
-    public void UpdateTroops(List<Tuple<int, Vector3>> positions)
+    public void UpdateTroops(List<List<Vector3>> troopPosPerFaction)
     {
         troopsInfluence.SetPixelData(emptyPixelData, 0);
         NativeArray<byte> pixelData = troopsInfluence.GetPixelData<byte>(0);
 
-        foreach (Tuple<int, Vector3> tuple in positions)
+        for (int factionID = 0; factionID < troopPosPerFaction.Count; factionID++)
         {
-            int     factionID = tuple.Item1;
-            Vector3 troopPos  = tuple.Item2;
+            foreach (Vector3 troopPos in troopPosPerFaction[factionID])
+            {
+                Vector2 texCoords = WorldToTexture(troopPos);
+                int arrayIdx = TextureToArray(texCoords, troopsInfluence.width);
             
-            Vector2 texCoords = WorldToTexture(troopPos);
-            int arrayIdx = TextureToArray(texCoords, troopsInfluence.width);
-            
-            pixelData[arrayIdx+factionID] = 255;
-            pixelData[arrayIdx+3] = 255;
+                pixelData[arrayIdx+factionID] = 255;
+                pixelData[arrayIdx+3] = 255; // TEMP
+            }
         }
         
         troopsInfluence.Apply();

@@ -1,32 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class AIBot : Faction
 {
-    // All of the code inside is placeholder (for test purposes)
+    [SerializeField] private GOAP goap;
 
-    private float timer;
-    private NavMeshTriangulation triangulation;
+    private Thread thread;
+    private bool isStopped;
 
     // Start is called before the first frame update
-    void Start()
+    public override void Start()
     {
         base.Start();
-        SelectAllTroops();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (timer <= 0)
-        {
-            timer = 7.0f;
-            MoveCrowd();
-        }
-
-        timer -= Time.deltaTime;
+        thread = new Thread(Run);
     }
 
     void SelectAllTroops()
@@ -46,5 +35,24 @@ public class AIBot : Faction
         Vector3 randomDirection = Random.insideUnitSphere * 10;
         NavMesh.SamplePosition(randomDirection, out var hit, 10.0f, 1);
         crowd.SetCrowdDestination(hit.position);
+    }
+
+    void Run()
+    {
+        while (!isStopped)
+        {
+
+        }
+    }
+
+    private void OnDestroy()
+    {
+        thread.Abort();
+        isStopped = true;
+    }
+    private void OnApplicationQuit()
+    {
+        thread.Abort();
+        isStopped = true;
     }
 }

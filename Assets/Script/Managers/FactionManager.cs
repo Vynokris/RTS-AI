@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,9 +14,13 @@ public class FactionManager : MonoBehaviour
 
     private Dictionary<uint, Faction> factions = new();
     public static Player playerFaction { get; private set; }
+    
+    protected InfluenceManager influenceManager;
 
     private void Start()
     {
+        influenceManager = FindObjectOfType<InfluenceManager>();
+        
         Player player = Instantiate(playerGameObject).GetComponent<Player>();
         player.AssignID(0);
         factions.Add(player.GetID(), player);
@@ -31,8 +37,28 @@ public class FactionManager : MonoBehaviour
         {
             Debug.LogError("Not enough factions to start game.");
         }
+        
+        StartCoroutine(UpdateTroopsInfluence());
     }
-    
+
+    private IEnumerator UpdateTroopsInfluence()
+    {
+        while (true)
+        {
+            List<List<Vector3>> troopPosPerFaction = new();
+            foreach (var faction in factions)
+            {
+                List<Vector3> troopPos = new();
+                foreach (Troop troop in faction.Value.troops) {
+                    troopPos.Add(troop.transform.position);
+                }
+                troopPosPerFaction.Add(troopPos);
+            }
+            influenceManager.UpdateTroops(troopPosPerFaction);
+            yield return new WaitForSeconds(1);
+        }
+    }
+
     public Faction TryGetFaction(uint id)
     {
         if (id is Faction.unassignedID || !factions.TryGetValue(id, out Faction faction)) return null;

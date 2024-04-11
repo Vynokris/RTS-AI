@@ -28,6 +28,9 @@ public class Troop : MonoBehaviour
 
     private void Awake()
     {
+        blackBoard.SetMaxSpeed(agent.speed);
+        attackRefreshTimer = blackBoard.GetAttackDelay();
+
         stateMachine.CreateState("Idle");
         stateMachine.CreateState("Navigate");
         stateMachine.CreateState("Guard", GuardState);
@@ -41,8 +44,7 @@ public class Troop : MonoBehaviour
 
     public void Start()
     {
-        blackBoard.SetMaxSpeed(agent.speed);
-        attackRefreshTimer = blackBoard.GetAttackDelay();
+
     }
 
     public void Update()
@@ -66,7 +68,7 @@ public class Troop : MonoBehaviour
         selectionSprite.gameObject.SetActive(false);
     }
 
-    public void Attack()
+    public void Attack() // Called by an animation notifier
     {
         if (underAttackTroop)
             underAttackTroop.TakeDamage(blackBoard.GetDamage());
@@ -85,8 +87,6 @@ public class Troop : MonoBehaviour
                 }
             }
         }
-
-        CheckEnemyDeath(underAttackTroop);
     }
 
     public void TakeDamage(float damage)
@@ -140,14 +140,6 @@ public class Troop : MonoBehaviour
         selectionSprite.color = color;
     }
 
-    private void CheckEnemyDeath(Troop troop)
-    {
-        if (blackBoard.GetTarget() == null)
-        {
-
-        }
-    }
-
     private void AdvanceToEnemy(HashSet<Troop> nearingEnemies)
     {
         attackPathRefreshTimer -= Time.deltaTime;
@@ -199,6 +191,7 @@ public class Troop : MonoBehaviour
             {
                 if (Vector3.Distance(transform.position, nearingEnemies.FirstOrDefault().transform.position) < blackBoard.GetRange())
                 {
+                    agent.ResetPath();
                     animator.Play("Attack");
                     underAttackTroop = nearingEnemies.FirstOrDefault();
                     attackRefreshTimer = blackBoard.GetAttackDelay();

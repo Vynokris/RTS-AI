@@ -225,6 +225,9 @@ public class Tile : MonoBehaviour
             Destroy(building);
             building = null;
         }
+        
+        owningFaction.RemoveOwnership(this);
+        enabled = false;
 
         BuildingType prevBuildingType = buildingType;
         buildingType = BuildingType.None;
@@ -237,8 +240,5 @@ public class Tile : MonoBehaviour
                 TrySetResource(ResourceType.Stone);
                 break;
         }
-        
-        owningFaction.RemoveOwnership(this);
-        enabled = false;
     }
 }

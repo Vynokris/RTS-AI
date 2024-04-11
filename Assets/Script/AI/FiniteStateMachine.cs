@@ -29,7 +29,6 @@ public class FiniteStateMachine : MonoBehaviour
         }
 
         currentState.GetUpdateAction()?.Invoke();
-        Debug.Log(currentState.GetName());
     }
 
     public void CreateState(string stateName, Action updateFunction = null, Action onStateEnter = null, Action onStateExit = null)

@@ -47,13 +47,16 @@ public class Player : Faction
         uiManager.AddTroopSelectButtonListener(TroopType.Golem,    () => selectedBarracks?.AddTroopToTrain(TroopType.Golem));
         
         // Move the camera to the faction's spawn tile.
-        Ray ray = new Ray(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + 4.5f), cam.transform.rotation * Vector3.forward);
-        if (selectionDefaultPlane.Raycast(ray, out float enter))
+        spawnTileAssigned.AddListener(() =>
         {
-            Vector3 camOrig = ray.origin + ray.direction * enter;
-            Debug.Log(ray.origin.x + " " + ray.origin.y + " " + ray.origin.z + ", " + camOrig.x + " " + camOrig.y + " " + camOrig.z);
-            cam.transform.parent.gameObject.GetComponent<CameraControls>().SetOrigin(camOrig);
-        }
+            Ray ray = new Ray(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + 4.5f), cam.transform.rotation * Vector3.forward);
+            if (selectionDefaultPlane.Raycast(ray, out float enter))
+            {
+                Vector3 camOrig = ray.origin + ray.direction * enter;
+                Debug.Log(ray.origin.x + " " + ray.origin.y + " " + ray.origin.z + ", " + camOrig.x + " " + camOrig.y + " " + camOrig.z);
+                cam.transform.parent.gameObject.GetComponent<CameraControls>().SetOrigin(camOrig);
+            }
+        });
 
         Cursor.SetCursor(defaultCursor.texture, defaultCursor.hotspot, CursorMode.Auto);
     }
@@ -129,6 +132,7 @@ public class Player : Faction
             RectTransform selectionBox = uiManager.GetSelectionBox();
             selectionBox.sizeDelta = Vector2.zero;
             selectionBox.gameObject.SetActive(false);
+            crowd.ComputeCrowdSize();
             crowd.ComputeSlowestTroopSpeed();
             crowd.LimitCrowdSpeedToSlowest();
         }
