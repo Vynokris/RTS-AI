@@ -65,7 +65,8 @@ public class InfluenceManager : MonoBehaviour
         blurRenderTexture.enableRandomWrite = true;
         blurRenderTexture.Create();
         
-        rawImageTest.texture = buildingsInfluence[1];
+        if (rawImageTest)
+            rawImageTest.texture = buildingsInfluence[1];
     }
 
     public Vector2 WorldToTexture(Vector3 worldCoords)

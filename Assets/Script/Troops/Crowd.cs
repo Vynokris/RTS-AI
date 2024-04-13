@@ -3,15 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Crowd
 {
-    private Vector3 position;
-    private float radius;
+    private GameObject coordinatorPrefab;
+    private Coordinator coordinator;
 
     public bool crowdUnderAttack { get; private set; }= false;
 
-    private readonly HashSet<Troop> troops = new();
+    private HashSet<Troop> troops = new();
     private float slowestTroopSpeed = float.MaxValue;
 
     public void ComputeSlowestTroopSpeed()
@@ -50,10 +51,12 @@ public class Crowd
 
     public void SetCrowdDestination(Vector3 destination)
     {
-        foreach (var unit in troops)
-        {
-            unit.SetDestination(destination);
-        }
+        //foreach (var unit in troops)
+        //{
+        //    unit.SetDestination(destination);
+        //}
+
+        coordinator.GetAgent().SetDestination(destination);
     }
 
     public void AddTroop(Troop troop)
@@ -84,35 +87,21 @@ public class Crowd
         }
     }
 
-    public void ComputeCrowdSize()
+    public void RepositionCoordinator()
     {
-        float sumX = 0.0f, sumZ = 0.0f;
-        float farthestTroopDistance = 0.0f;
+        coordinator.ComputeCrowdSize();
+    }
 
-        foreach (var troop in troops)
-        {
-            sumX += troop.transform.position.x;
-            sumZ += troop.transform.position.z;
-        }
+    public void SetCoordinator(GameObject coordinator)
+    {
+        coordinatorPrefab = coordinator;
+        this.coordinator = coordinatorPrefab.GetComponent<Coordinator>();
+        this.coordinator.SetTroopRef(ref troops);
+    }
 
-        float middleX = sumX / troops.Count;
-        float middleZ = sumZ / troops.Count;
-
-        position.x = middleX;
-        position.z = middleZ;
-
-        foreach (var troop in troops)
-        {
-            float deltaX = troop.transform.position.x - position.x;
-            float deltaZ = troop.transform.position.z - position.z;
-
-            float distance = Mathf.Sqrt(deltaX * deltaX + deltaZ * deltaZ);
-
-            if (distance > farthestTroopDistance)
-                farthestTroopDistance = distance;
-        }
-
-        radius = farthestTroopDistance;
+    public void SetFormation(Formation formation)
+    {
+        coordinator.SetFormation(formation);
     }
 
     public void SetCrowdUnderAttack()

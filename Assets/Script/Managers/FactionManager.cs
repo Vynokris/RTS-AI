@@ -17,7 +17,7 @@ public class FactionManager : MonoBehaviour
     
     protected InfluenceManager influenceManager;
 
-    private void Start()
+    private void Awake()
     {
         influenceManager = FindObjectOfType<InfluenceManager>();
         

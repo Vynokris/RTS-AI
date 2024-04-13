@@ -26,7 +26,7 @@ public class Faction : MonoBehaviour
     public Faction() { id = unassignedID; }
     public uint GetID() { return id; }
 
-    public virtual void Start()
+    public virtual void Awake()
     {
         troopStorage     = FindObjectOfType<TroopStorage>();
         influenceManager = FindObjectOfType<InfluenceManager>();
@@ -39,6 +39,7 @@ public class Faction : MonoBehaviour
                 SpawnTroop(TroopType.Knight, navMeshHit.position);
                 SpawnTroop(TroopType.Archer, navMeshHit.position);
             }
+            crowd.SetCoordinator(Instantiate(troopStorage.GetTroopPrefab(TroopType.Coordinator), navMeshHit.position, Quaternion.identity));
         });
     }
     

@@ -9,11 +9,8 @@ public class GOAP : MonoBehaviour
 {
     public WorldState currentWorldState;
 
-    [SerializeField]
-    public List<GOAPAction> availableActions = new List<GOAPAction>();
-
-    [SerializeField]
-    public List<GOAPAction> currentPlan = new List<GOAPAction>();
+    [SerializeField] public List<GOAPAction> availableActions = new();
+    [SerializeField] public List<GOAPAction> currentPlan = new();
 
     protected void Start()
     {

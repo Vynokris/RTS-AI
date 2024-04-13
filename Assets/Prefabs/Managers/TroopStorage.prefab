@@ -44,7 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d2a370be027abf4fb4641968dd63e95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  golemPrefab: {fileID: 7643435542127954121, guid: f2f5a2325c3a6d142a6be4d8c40cf537,
+  coordinatorPrefab: {fileID: 6691457409772337576, guid: ecc13d04ef9b57d45924abb8455ed53f,
     type: 3}
   knightPrefab: {fileID: 184719126140870912, guid: 292299d189acc12429e99f5f752b7f81,
+    type: 3}
+  archerPrefab: {fileID: 184719126140870912, guid: 22fc3f9e099d2264794e49041869004f,
+    type: 3}
+  cavalierPrefab: {fileID: 0}
+  golemPrefab: {fileID: 7643435542127954121, guid: f2f5a2325c3a6d142a6be4d8c40cf537,
     type: 3}

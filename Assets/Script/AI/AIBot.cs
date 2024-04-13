@@ -12,9 +12,9 @@ public class AIBot : Faction
     private bool isStopped;
 
     // Start is called before the first frame update
-    public override void Start()
+    public override void Awake()
     {
-        base.Start();
+        base.Awake();
         thread = new Thread(Run);
     }
 

@@ -237,6 +237,7 @@ public class Troop : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Troop troop = other.gameObject.GetComponent<Troop>();
+        if (!troop) return;
 
         if (sphereTriggerLayer == (sphereTriggerLayer | (1 << other.gameObject.layer)) || troop.owningFaction == owningFaction)
             return;

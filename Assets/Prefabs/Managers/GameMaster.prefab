@@ -44,35 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dd57fd83302d7419fbc2b695b933ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  factions:
-  - name: Player
-    color: {r: 0, g: 0, b: 1, a: 0}
-    crops: 10
-    lumber: 10
-    stone: 10
-    spawnTile: {fileID: 0}
-    ownedTiles: []
-  - name: Enemy
-    color: {r: 1, g: 0, b: 0, a: 0}
-    crops: 10
-    lumber: 10
-    stone: 10
-    spawnTile: {fileID: 0}
-    ownedTiles: []
-  - name: 
-    color: {r: 0, g: 0, b: 0, a: 0}
-    crops: 10
-    lumber: 10
-    stone: 10
-    spawnTile: {fileID: 0}
-    ownedTiles: []
-  - name: 
-    color: {r: 0, g: 0, b: 0, a: 0}
-    crops: 10
-    lumber: 10
-    stone: 10
-    spawnTile: {fileID: 0}
-    ownedTiles: []
-  cropsText: {fileID: 0}
-  lumberText: {fileID: 0}
-  stoneText: {fileID: 0}
+  playerGameObject: {fileID: 2155017811794067266, guid: a4e1ae457704c4e4bb0661304ce57368,
+    type: 3}
+  aiGameObject: {fileID: 64051042893017158, guid: 4f9f62504871be246a03337710cd4f09,
+    type: 3}
+  playerCount: 2

@@ -27,9 +27,9 @@ public class Player : Faction
     private BuildingType currentlyPlacingBuilding = BuildingType.None;
     private BarracksBuilding selectedBarracks = null;
     
-    public override void Start()
+    public override void Awake()
     {
-        base.Start();
+        base.Awake();
         uiManager   = FindObjectOfType<UiManager>();
         costStorage = FindObjectOfType<CostStorage>();
         cam         = Camera.main;
@@ -55,6 +55,7 @@ public class Player : Faction
                 Vector3 camOrig = ray.origin + ray.direction * enter;
                 Debug.Log(ray.origin.x + " " + ray.origin.y + " " + ray.origin.z + ", " + camOrig.x + " " + camOrig.y + " " + camOrig.z);
                 cam.transform.parent.gameObject.GetComponent<CameraControls>().SetOrigin(camOrig);
+                cam.transform.parent.position = camOrig;
             }
         });
 
@@ -132,11 +133,21 @@ public class Player : Faction
             RectTransform selectionBox = uiManager.GetSelectionBox();
             selectionBox.sizeDelta = Vector2.zero;
             selectionBox.gameObject.SetActive(false);
-            crowd.ComputeCrowdSize();
+            crowd.RepositionCoordinator();
             crowd.ComputeSlowestTroopSpeed();
             crowd.LimitCrowdSpeedToSlowest();
         }
-        
+
+        else if (Input.GetKeyDown(KeyCode.L)) // TODO: Implement this in a better way
+        {
+            crowd.SetFormation(Formation.Square);
+        }
+
+        else if (Input.GetKeyDown(KeyCode.P)) // TODO: Implement this in a better way
+        {
+            crowd.SetFormation(Formation.Circle);
+        }
+
         if (Input.GetMouseButtonDown(1))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
