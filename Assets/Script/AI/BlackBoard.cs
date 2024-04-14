@@ -12,6 +12,7 @@ public class BlackBoard : MonoBehaviour
     private HashSet<Troop> nearingEnemies = new();
 
     private Troop target;
+    private Building buildingTarget;
 
     protected float life;
     protected float maxSpeed;
@@ -56,6 +57,11 @@ public class BlackBoard : MonoBehaviour
     {
         return target;
     }
+    
+    public Building GetBuildingTarget()
+    {
+        return buildingTarget;
+    }
 
     public void SetLife(float life)
     {
@@ -70,5 +76,9 @@ public class BlackBoard : MonoBehaviour
     public void SetTarget(Troop troopTarget)
     {
         target = troopTarget;
+    }
+    public void SetTarget(Building target)
+    {
+        buildingTarget = target;
     }
 }

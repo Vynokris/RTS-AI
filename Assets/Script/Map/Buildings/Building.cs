@@ -8,6 +8,11 @@ public class Building : MonoBehaviour
     public float maxHealth { get; private set; }
     public float health    { get; private set; }
 
+    public Tile GetOwningTile()
+    {
+        return owningTile;
+    }
+
     public void SetOwningTile(Tile tile)
     {
         owningTile = tile;

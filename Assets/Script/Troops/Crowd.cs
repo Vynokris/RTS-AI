@@ -46,6 +46,16 @@ public class Crowd
         foreach (var unit in troops)
         {
             unit.GetBlackBoard().SetTarget(target);
+            unit.GetBlackBoard().SetTarget((Building)null);
+        }
+    }
+
+    public void SetCrowdTarget(Building target)
+    {
+        foreach (var unit in troops)
+        {
+            unit.GetBlackBoard().SetTarget(target);
+            unit.GetBlackBoard().SetTarget((Troop)null);
         }
     }
 

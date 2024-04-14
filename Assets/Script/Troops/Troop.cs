@@ -20,6 +20,7 @@ public class Troop : MonoBehaviour
     public Faction owningFaction { get; private set; } = null;
     public TroopType type { get; private set; } = TroopType.Knight;
 
+    private Building underAttackBuilding;
     private Troop underAttackTroop;
     private float attackPathRefreshTimer = 1.0f;
     private float attackRefreshTimer = 0.0f;
@@ -70,6 +71,12 @@ public class Troop : MonoBehaviour
 
     public void Attack() // Called by an animation notifier
     {
+        if (underAttackBuilding)
+        {
+            underAttackBuilding.TakeDamage(blackBoard.GetDamage());
+            return;
+        }
+
         if (underAttackTroop)
             underAttackTroop.TakeDamage(blackBoard.GetDamage());
 
@@ -202,9 +209,14 @@ public class Troop : MonoBehaviour
             }
         }
 
-        else
+        else if (!blackBoard.GetBuildingTarget())
         {
             AdvanceToEnemy(nearingEnemies);
+        }
+
+        else
+        {
+            agent.SetDestination(blackBoard.GetBuildingTarget().transform.position);
         }
     }
 
