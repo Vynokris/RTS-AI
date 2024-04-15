@@ -162,6 +162,12 @@ public class Player : Faction
                     crowd.SetCrowdTarget(possibleTroop);
                 }
 
+                else if (hit.collider.gameObject.TryGetComponent(out Building possiblebuilding) && possiblebuilding?.GetOwningTile().owningFaction.id != id)
+                {
+                    crowd.ForceState("Attack");
+                    crowd.SetCrowdTarget(possiblebuilding);
+                }
+
                 else
                 {
                     crowd.ForceState("Navigate");

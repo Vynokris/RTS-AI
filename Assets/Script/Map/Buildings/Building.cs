@@ -12,6 +12,11 @@ public class Building : MonoBehaviour
     public float health    { get; protected set; }
     public bool  repairing { get; protected set; } = false;
 
+    public Tile GetOwningTile()
+    {
+        return owningTile;
+    }
+
     public void SetOwningTile(Tile tile)
     {
         owningTile = tile;
