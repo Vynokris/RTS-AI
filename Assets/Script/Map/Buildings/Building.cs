@@ -24,7 +24,12 @@ public class Building : MonoBehaviour
     
     public void TakeDamage(float damage)
     {
-        health = Mathf.Max(0, health - damage);
+        health -= damage;
+
+        if (health <= 0)
+        {
+            owningTile.RemoveBuilding();
+        }
     }
 
     public void Repair()

@@ -151,10 +151,12 @@ public class Player : Faction
         if (Input.GetMouseButtonDown(1))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            
+
             if (Physics.Raycast(ray, out var hit, float.MaxValue, -5, QueryTriggerInteraction.Ignore))
             {
                 hit.collider.gameObject.TryGetComponent(out Troop possibleTroop);
+                hit.collider.gameObject.TryGetComponent(out Tile tile);
+                Building possibleBuilding = tile.GetBuilding();
 
                 if (possibleTroop && possibleTroop?.owningFaction.id != id)
                 {
@@ -162,10 +164,10 @@ public class Player : Faction
                     crowd.SetCrowdTarget(possibleTroop);
                 }
 
-                else if (hit.collider.gameObject.TryGetComponent(out Building possiblebuilding) && possiblebuilding?.GetOwningTile().owningFaction.id != id)
+                else if (possibleBuilding && possibleBuilding.GetOwningTile().owningFaction.id != id)
                 {
                     crowd.ForceState("Attack");
-                    crowd.SetCrowdTarget(possiblebuilding);
+                    crowd.SetCrowdTarget(possibleBuilding);
                 }
 
                 else

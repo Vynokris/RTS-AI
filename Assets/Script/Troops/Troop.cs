@@ -20,8 +20,6 @@ public class Troop : MonoBehaviour
     public Faction owningFaction { get; private set; } = null;
     public TroopType type { get; private set; } = TroopType.Knight;
 
-    private Building underAttackBuilding;
-    private Troop underAttackTroop;
     private float attackPathRefreshTimer = 1.0f;
     private float attackRefreshTimer = 0.0f;
 
@@ -71,14 +69,14 @@ public class Troop : MonoBehaviour
 
     public void Attack() // Called by an animation notifier
     {
-        if (underAttackBuilding)
+        if (blackBoard.GetBuildingTarget())
         {
-            underAttackBuilding.TakeDamage(blackBoard.GetDamage());
+            blackBoard.GetBuildingTarget().TakeDamage(blackBoard.GetDamage());
             return;
         }
 
-        if (underAttackTroop)
-            underAttackTroop.TakeDamage(blackBoard.GetDamage());
+        if (blackBoard.GetTarget())
+            blackBoard.GetTarget().TakeDamage(blackBoard.GetDamage());
 
         else
         {
@@ -88,8 +86,8 @@ public class Troop : MonoBehaviour
             {
                 if (Vector3.Distance(transform.position, enemy.transform.position) < blackBoard.GetRange())
                 {
-                    underAttackTroop = enemy;
-                    underAttackTroop.TakeDamage(blackBoard.GetDamage());
+                    blackBoard.SetTarget(enemy);
+                    blackBoard.GetBuildingTarget().TakeDamage(blackBoard.GetDamage());
                     break;
                 }
             }
@@ -181,7 +179,7 @@ public class Troop : MonoBehaviour
                 if (Vector3.Distance(transform.position, nearingEnemies.FirstOrDefault().transform.position) < blackBoard.GetRange())
                 {
                     animator.Play("Attack");
-                    underAttackTroop = nearingEnemies.FirstOrDefault();
+                    blackBoard.SetTarget(nearingEnemies.FirstOrDefault());
                     attackRefreshTimer = blackBoard.GetAttackDelay();
                 }
             }
@@ -200,7 +198,7 @@ public class Troop : MonoBehaviour
                 {
                     agent.ResetPath();
                     animator.Play("Attack");
-                    underAttackTroop = nearingEnemies.FirstOrDefault();
+                    blackBoard.SetTarget(nearingEnemies.FirstOrDefault());
                     attackRefreshTimer = blackBoard.GetAttackDelay();
                 }
 
@@ -216,7 +214,18 @@ public class Troop : MonoBehaviour
 
         else
         {
-            agent.SetDestination(blackBoard.GetBuildingTarget().transform.position);
+            if (attackRefreshTimer <= 0.0f)
+            {
+                if (Vector3.Distance(transform.position, blackBoard.GetBuildingTarget().transform.position) < blackBoard.GetRange())
+                {
+                    agent.ResetPath();
+                    animator.Play("Attack");
+                    attackRefreshTimer = blackBoard.GetAttackDelay();
+                }
+
+                else
+                    agent.SetDestination(blackBoard.GetBuildingTarget().transform.position);
+            }
         }
     }
 
@@ -236,7 +245,7 @@ public class Troop : MonoBehaviour
 
     private bool IsNoMoreTargetInRange()
     {
-        return !blackBoard.GetTarget() && blackBoard.GetNearingEnemies().Count == 0;
+        return !blackBoard.GetTarget() && blackBoard.GetNearingEnemies().Count == 0 && !blackBoard.GetBuildingTarget();
     }
 
     private bool IsGettingAttacked()

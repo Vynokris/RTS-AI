@@ -78,6 +78,11 @@ public class Tile : MonoBehaviour
         meshStorage = _meshStorage;
     }
     
+    public Building GetBuilding()
+    {
+        return building;
+    }
+
     public float GetTileHeight()
     {
         return type == TileType.Water
