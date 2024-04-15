@@ -8,13 +8,11 @@ public class FiniteStateMachine : MonoBehaviour
     private List<Node> states = new List<Node>();
     private Node currentState = null;
 
-    // Start is called before the first frame update
     void Start()
     {
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         for (int i = 0; i < currentState.GetConnections().Count; i++)

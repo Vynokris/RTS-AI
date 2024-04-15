@@ -45,6 +45,8 @@ public class FactionManager : MonoBehaviour
     {
         while (true)
         {
+            yield return new WaitForSeconds(1);
+            
             List<List<Vector3>> troopPosPerFaction = new();
             foreach (var faction in factions)
             {
@@ -55,7 +57,6 @@ public class FactionManager : MonoBehaviour
                 troopPosPerFaction.Add(troopPos);
             }
             influenceManager.UpdateTroops(troopPosPerFaction);
-            yield return new WaitForSeconds(1);
         }
     }
 

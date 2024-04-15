@@ -14,6 +14,13 @@ using Debug = UnityEngine.Debug;
 //      - green channel: AI influence
 //      - blue channel (only for resource influence textures): unclaimed resources
 
+public enum InfluenceType
+{
+    Resources,
+    Buildings,
+    Troops,
+}
+
 public class InfluenceManager : MonoBehaviour
 {
     [SerializeField] private ComputeShader influenceBlurShader;
@@ -66,25 +73,25 @@ public class InfluenceManager : MonoBehaviour
         blurRenderTexture.Create();
         
         if (rawImageTest)
-            rawImageTest.texture = buildingsInfluence[1];
+            rawImageTest.texture = troopsInfluence;
     }
 
-    public Vector2 WorldToTexture(Vector3 worldCoords)
+    private Vector2 WorldToTexture(Vector3 worldCoords)
     {
         return new Vector2(worldCoords.x * worldToTexture, worldCoords.z * worldToTexture);
     }
 
-    public Vector3 TextureToWorld(Vector2 texCoords)
+    private Vector3 TextureToWorld(Vector2 texCoords)
     {
         return new Vector3(texCoords.x * textureToWorld, 0, texCoords.y * textureToWorld);
     }
 
-    public int TextureToArray(Vector2 texCoords, int texWidth)
+    private int TextureToArray(Vector2 texCoords, int texWidth)
     {
         return (Mathf.RoundToInt(texCoords.y) * texWidth + Mathf.RoundToInt(texCoords.x)) * 4;
     }
 
-    public Vector2 ArrayToTexture(int arrayIdx, int texWidth)
+    private Vector2 ArrayToTexture(int arrayIdx, int texWidth)
     {
         return new Vector2(Mathf.RoundToInt((float)arrayIdx / texWidth), arrayIdx % texWidth);
     }
@@ -203,5 +210,20 @@ public class InfluenceManager : MonoBehaviour
         
         troopsInfluence.Apply();
         BlurTexture(troopsInfluence, troopsInfluence);
+    }
+    
+    public float GetInfluence(Vector3 worldPosition, uint factionID, InfluenceType influenceType)
+    {
+        NativeArray<byte> pixelData = influenceType switch
+        {
+            InfluenceType.Resources => resourcesInfluence[1].GetPixelData<byte>(0),
+            InfluenceType.Buildings => buildingsInfluence[1].GetPixelData<byte>(0),
+            InfluenceType.Troops    => troopsInfluence.GetPixelData<byte>(0),
+            _ => new(),
+        };
+        
+        Vector2 texCoords = WorldToTexture(worldPosition);
+        int arrayIdx = TextureToArray(texCoords, buildingsInfluence[0].width);
+        return pixelData[arrayIdx+(int)factionID];
     }
 }

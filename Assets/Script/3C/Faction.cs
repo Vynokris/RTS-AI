@@ -34,6 +34,7 @@ public class Faction : MonoBehaviour
         spawnTileAssigned.AddListener(() =>
         {
             NavMesh.SamplePosition(spawnTile.transform.position + Vector3.up * (spawnTile.GetTileHeight() + .5f), out NavMeshHit navMeshHit, float.MaxValue, NavMesh.AllAreas);
+            if (!navMeshHit.hit) return;
             for (int i = 0; i < 3; i++)
             {
                 SpawnTroop(TroopType.Knight, navMeshHit.position);

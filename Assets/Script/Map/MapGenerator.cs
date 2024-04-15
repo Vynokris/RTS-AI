@@ -6,7 +6,8 @@ using Random = UnityEngine.Random;
 
 public class MapGenerator : MonoBehaviour
 {
-    [SerializeField] private NavMeshSurface navMesh;
+    [SerializeField] private GameObject navMeshObject;
+    private List<NavMeshSurface> navMeshes;
     [SerializeField] private Grid grid;
     [SerializeField] private GameObject tilePrefab;
 
@@ -30,6 +31,7 @@ public class MapGenerator : MonoBehaviour
 
     public void Start()
     {
+        navMeshes = new List<NavMeshSurface>(navMeshObject.GetComponents<NavMeshSurface>());
         DestroyMap();
         BuildMap();
     }
@@ -113,6 +115,9 @@ public class MapGenerator : MonoBehaviour
         }
         FindObjectOfType<InfluenceManager>().SetNaturalResources(naturalResourcePositions);
         
+        // Update all navigation meshes.
+        navMeshes.ForEach(navMesh => navMesh.BuildNavMesh());
+        
         // Set the spawn locations of all players.
         float minDistance = Vector3.Distance(tiles[0].transform.position, tiles[^1].transform.position) / 4;
         FactionManager factionManager = FindObjectOfType<FactionManager>();
@@ -142,8 +147,6 @@ public class MapGenerator : MonoBehaviour
             spawnTile.TrySetBuilding(BuildingType.Castle);
             factions[i].TakeOwnership(spawnTile, true);
         }
-        
-        navMesh.BuildNavMesh();
     }
 
     public void DestroyMap()
@@ -156,7 +159,7 @@ public class MapGenerator : MonoBehaviour
             destroyChild(i);
         }
         tiles.Clear();
-        navMesh.RemoveData();
+        navMeshes.ForEach(navMesh => navMesh.RemoveData());
     }
 
     void Update()
