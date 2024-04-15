@@ -78,6 +78,11 @@ public class Tile : MonoBehaviour
         meshStorage = _meshStorage;
     }
     
+    public Building GetBuilding()
+    {
+        return building;
+    }
+
     public float GetTileHeight()
     {
         return type == TileType.Water
@@ -222,8 +227,9 @@ public class Tile : MonoBehaviour
 
     public void RemoveBuilding()
     {
-        if (building is not null) {
-            Destroy(building);
+        if (building is not null) 
+        {
+            Destroy(building.gameObject);
             building = null;
         }
         
