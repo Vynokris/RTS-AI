@@ -1,13 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Serialization;
 
 public class AIBot : Faction
 {
+    public class UtilityData
+    {
+        public Building buildingToRepair = null;
+        public Building buildingToGuard  = null;
+    }
+    
     private UtilitySystem utilitySystem;
+    private UtilityData   utilityData;
 
     private Thread thread;
     private bool isStopped;
@@ -56,18 +60,32 @@ public class AIBot : Faction
         {
             if (tile.buildingType is BuildingType.None) continue;
             float healthRatio = tile.building.health / tile.building.maxHealth;
-            if (lowestRatio > healthRatio)
+            if (lowestRatio > healthRatio) {
                 lowestRatio = healthRatio;
+                utilityData.buildingToRepair = tile.building;
+            }
         }
         return lowestRatio;
     }
     
-    public float FormTroopsNecessity()
+    public float GuardBuildingNecessity()
     {
-        return 0;
+        float maxInfluence = 0;
+        foreach (Tile tile in ownedTiles)
+        {
+            if (tile.buildingType is BuildingType.None) continue; // TODO: continue if the building is already guarded.
+            float playerBuildingsInfluence = influenceManager.GetInfluence(tile.transform.position, FactionManager.playerFaction.GetID(), InfluenceType.Buildings);
+            float resourcesInfluence       = influenceManager.GetInfluence(tile.transform.position, Faction.unassignedID, InfluenceType.Resources);
+            float influenceSum = playerBuildingsInfluence + resourcesInfluence;
+            if (maxInfluence < influenceSum) {
+                maxInfluence = influenceSum;
+                utilityData.buildingToGuard = tile.building;
+            }
+        }
+        return maxInfluence; // TODO: check value and make sure it is fitted and clamped to the 0->1 range.
     }
     
-    public float GuardBuildingNecessity()
+    public float FormTroopsNecessity()
     {
         return 0;
     }
@@ -88,30 +106,17 @@ public class AIBot : Faction
     
     public void RepairBuilding()
     {
-        float    lowestRatio      = 1;
-        Building buildingToRepair = null;
-        foreach (Tile tile in ownedTiles)
-        {
-            if (tile.buildingType is BuildingType.None || tile.building.repairing) continue;
-            float healthRatio = tile.building.health / tile.building.maxHealth;
-            if (lowestRatio > healthRatio) {
-                lowestRatio = healthRatio;
-                buildingToRepair = tile.building;
-            }
-        }
-        
-        if (buildingToRepair is not null)
-        {
-            buildingToRepair.Repair();
-        }
-    }
-    
-    public void FormTroops()
-    {
-        
+        if (utilityData.buildingToRepair is null) return;
+        utilityData.buildingToRepair.Repair();
     }
     
     public void GuardBuilding()
+    {
+        if (utilityData.buildingToGuard is null) return;
+        // TODO
+    }
+    
+    public void FormTroops()
     {
         
     }

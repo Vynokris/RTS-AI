@@ -56,7 +56,7 @@ public class Tile : MonoBehaviour
     
     [SerializeField] private GameObject propPrefab;
     [SerializeField] private GameObject resourcePrefab;
-    [SerializeField] private GameObject buildingPrefab;
+    [SerializeField] private GameObject castleBuildingPrefab;
     [SerializeField] private GameObject resourceBuildingPrefab;
     [SerializeField] private GameObject barracksBuildingPrefab;
     
@@ -199,7 +199,8 @@ public class Tile : MonoBehaviour
         {
             BuildingType.Farm or BuildingType.Lumbermill or BuildingType.Mine => resourceBuildingPrefab,
             BuildingType.Barracks => barracksBuildingPrefab,
-            _ => buildingPrefab
+            BuildingType.Castle => castleBuildingPrefab,
+            _ => null,
         };
         building = Instantiate(instantiatedBuilding, transform.parent).GetComponent<Building>();
         building.SetOwningTile(this);

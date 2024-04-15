@@ -109,15 +109,15 @@ public class InfluenceManager : MonoBehaviour
     }
 
     /// Use only once to setup natural resource influence.
-    public void SetNaturalResources(List<Vector3> resourcesPositions)
+    public void SetNaturalResources(List<Tile> resourceTiles)
     {
         var timer = new Stopwatch();
         timer.Start();
         
         NativeArray<byte> pixelData = resourcesInfluence[0].GetPixelData<byte>(0);
-        foreach (Vector3 resourcePos in resourcesPositions)
+        foreach (Tile resourceTile in resourceTiles)
         {
-            Vector2 texCoords = WorldToTexture(resourcePos);
+            Vector2 texCoords = WorldToTexture(resourceTile.transform.position);
             int arrayIdx = TextureToArray(texCoords, resourcesInfluence[0].width);
             
             pixelData[arrayIdx+2] = 255; // Unclaimed natural resource.
@@ -183,7 +183,7 @@ public class InfluenceManager : MonoBehaviour
         Vector2 texCoords = WorldToTexture(position);
         int arrayIdx = TextureToArray(texCoords, buildingsInfluence[0].width);
         
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 3; i++)
             pixelData[arrayIdx + i] = 0;
         
         buildingsInfluence[0].Apply();
@@ -224,6 +224,10 @@ public class InfluenceManager : MonoBehaviour
         
         Vector2 texCoords = WorldToTexture(worldPosition);
         int arrayIdx = TextureToArray(texCoords, buildingsInfluence[0].width);
+
+        if (factionID is Faction.unassignedID) {
+            return pixelData[arrayIdx] + pixelData[arrayIdx+1] + pixelData[arrayIdx+2];
+        }
         return pixelData[arrayIdx+(int)factionID];
     }
 }

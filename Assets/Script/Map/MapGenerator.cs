@@ -24,7 +24,8 @@ public class MapGenerator : MonoBehaviour
     [Range(0, 100)] [SerializeField] private int resourceSpawnChance = 1;
     [Range(0, 100)] [SerializeField] private int propSpawnChance = 1;
     
-    private List<Tile> tiles = new();
+    public List<Tile> tiles            { get; private set; } = new();
+    public List<Tile> naturalResources { get; private set; } = new();
     private float timer = 0.1f;
     private float timeSpent = 0.0f;
     private MeshStorage meshStorage = null;
@@ -92,7 +93,6 @@ public class MapGenerator : MonoBehaviour
         }
 
         // Set tile height and create props/resources.
-        List<Vector3> naturalResourcePositions = new();
         foreach (var tile in tiles)
         {
             float finalSample = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, tile.noiseHeight);
@@ -107,13 +107,13 @@ public class MapGenerator : MonoBehaviour
             tile.SetType(tileType);
 
             if (SetTileResource(tile)) {
-                naturalResourcePositions.Add(tile.transform.position);
+                naturalResources.Add(tile);
             }
             else {
                 SetTileProp(tile);
             }
         }
-        FindObjectOfType<InfluenceManager>().SetNaturalResources(naturalResourcePositions);
+        FindObjectOfType<InfluenceManager>().SetNaturalResources(naturalResources);
         
         // Update all navigation meshes.
         navMeshes.ForEach(navMesh => navMesh.BuildNavMesh());

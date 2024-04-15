@@ -84,7 +84,7 @@ MonoBehaviour:
     type: 3}
   resourcePrefab: {fileID: 1431532903868658292, guid: d7b1ea9f47d09664c872de7bdadff138,
     type: 3}
-  buildingPrefab: {fileID: 1431532903868658292, guid: 84450004f9be85748972056338b026ea,
+  castleBuildingPrefab: {fileID: 1431532903868658292, guid: 75f62c4b65c2ba04bbac01be34b10cce,
     type: 3}
   resourceBuildingPrefab: {fileID: 1431532903868658292, guid: 2854d1f97dc89c54b907579cdb9c59f9,
     type: 3}
