@@ -63,6 +63,8 @@ public class Tile : MonoBehaviour
     private MeshFilter  meshFilter;
     private MeshStorage meshStorage;
 
+    private Generation.Node associatedNode = null;
+
     public void Start()
     {
         enabled = false;
@@ -247,5 +249,15 @@ public class Tile : MonoBehaviour
                 TrySetResource(ResourceType.Stone);
                 break;
         }
+    }
+
+    public Generation.Node GetNode()
+    {
+        return associatedNode;
+    }
+
+    public void SetNode(Generation.Node node)
+    {
+        associatedNode = node;
     }
 }

@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(MapGenerator))]
+[CustomEditor(typeof(Generation.MapGenerator))]
 [CanEditMultipleObjects]
 public class MapGeneratorEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        MapGenerator mapGenerator = (MapGenerator)target;
+        Generation.MapGenerator mapGenerator = (Generation.MapGenerator)target;
         
         if (GUILayout.Button("Generate"))
         {

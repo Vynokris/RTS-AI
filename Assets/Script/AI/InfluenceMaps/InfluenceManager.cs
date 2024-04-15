@@ -37,11 +37,11 @@ public class InfluenceManager : MonoBehaviour
     private Texture2D troopsInfluence;
     private RenderTexture blurRenderTexture;
     
-    private MapGenerator mapGenerator;
+    private Generation.MapGenerator mapGenerator;
 
     private void Awake()
     {
-        mapGenerator = FindObjectOfType<MapGenerator>();
+        mapGenerator = FindObjectOfType<Generation.MapGenerator>();
         worldMapAspectRatio = mapGenerator.GetMapSize().x / mapGenerator.GetMapSize().y;
         textureSize = new Vector2(influenceMapResolution, influenceMapResolution * worldMapAspectRatio);
         worldToTexture = textureSize.x / mapGenerator.GetMapSize().x;
