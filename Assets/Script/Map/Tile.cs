@@ -223,7 +223,7 @@ public class Tile : MonoBehaviour
     public void RemoveBuilding()
     {
         if (building is not null) {
-            Destroy(building);
+            Destroy(building.gameObject);
             building = null;
         }
         

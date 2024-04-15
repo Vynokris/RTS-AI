@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e9bc9ce77b09a04ca6537c21c7fb19a, type: 3}
-  m_Name: AttackAction
+  m_Name: ActionGuardBuilding
   m_EditorClassIdentifier: 
   weight: 1
   curve:
@@ -37,5 +37,5 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  evalFuncName: AttackNecessity
-  performFuncName: Attack
+  evalFuncName: GuardBuildingNecessity
+  performFuncName: GuardBuilding

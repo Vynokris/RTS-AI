@@ -228,6 +228,6 @@ public class InfluenceManager : MonoBehaviour
         if (factionID is Faction.unassignedID) {
             return pixelData[arrayIdx] + pixelData[arrayIdx+1] + pixelData[arrayIdx+2];
         }
-        return pixelData[arrayIdx+(int)factionID];
+        return pixelData[arrayIdx+(int)factionID] / 255f;
     }
 }

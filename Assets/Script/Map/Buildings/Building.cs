@@ -48,5 +48,6 @@ public class Building : MonoBehaviour
     private void Start()
     {
         maxHealth = serializedMaxHealth;
+        health = maxHealth;
     }
 }
