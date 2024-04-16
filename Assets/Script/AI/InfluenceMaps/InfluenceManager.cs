@@ -62,7 +62,7 @@ public class InfluenceManager : MonoBehaviour
         resourcesInfluence[1].filterMode = FilterMode.Bilinear;
         buildingsInfluence[0].filterMode = FilterMode.Point;
         buildingsInfluence[1].filterMode = FilterMode.Bilinear;
-        troopsInfluence      .filterMode = FilterMode.Point;
+        troopsInfluence      .filterMode = FilterMode.Bilinear;
         
         resourcesInfluence[0].wrapMode = TextureWrapMode.Clamp;
         resourcesInfluence[1].wrapMode = TextureWrapMode.Clamp;

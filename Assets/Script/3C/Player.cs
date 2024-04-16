@@ -236,7 +236,10 @@ public class Player : Faction
                 if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
-                    DestroyBuilding(tile, true);
+                    if (tile != spawnTile)
+                    {
+                        DestroyBuilding(tile, true);
+                    }
                 }
             }
         }
