@@ -66,7 +66,7 @@ public class Crowd
         //    unit.SetDestination(destination);
         //}
 
-        coordinator.GetAgent().SetDestination(destination);
+        coordinator.SetCrowdDestination(destination);
     }
 
     public void AddTroop(Troop troop)
@@ -77,7 +77,8 @@ public class Crowd
 
     public void RemoveTroop(Troop troop)
     {
-        troops.Remove(troop);
+        if (!troops.Remove(troop)) return;
+        troop.SetDestination(coordinator.GetCrowdDestination());
         troop.Deselect();
     }
 
@@ -85,6 +86,7 @@ public class Crowd
     {
         foreach (Troop troop in troops) {
             troop.Deselect();
+            troop.SetDestination(coordinator.GetCrowdDestination());
         }
         troops.Clear();
     }

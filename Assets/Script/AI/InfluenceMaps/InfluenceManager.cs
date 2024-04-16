@@ -30,7 +30,10 @@ public class InfluenceManager : MonoBehaviour
     private float textureToWorld = -1;
     private float worldToTexture = -1;
     
-    [SerializeField] private RawImage rawImageTest;
+    [SerializeField] private RawImage resourcesRawImage;
+    [SerializeField] private RawImage buildingsRawImage;
+    [SerializeField] private RawImage troopsRawImage;
+    
     private byte[] emptyPixelData;
     private Texture2D[] resourcesInfluence = new Texture2D[2]; // 1st: no blur, 2nd: blurred.
     private Texture2D[] buildingsInfluence = new Texture2D[2]; // 1st: no blur, 2nd: blurred.
@@ -72,8 +75,9 @@ public class InfluenceManager : MonoBehaviour
         blurRenderTexture.enableRandomWrite = true;
         blurRenderTexture.Create();
         
-        if (rawImageTest)
-            rawImageTest.texture = troopsInfluence;
+        if (resourcesRawImage) resourcesRawImage.texture = resourcesInfluence[1];
+        if (buildingsRawImage) buildingsRawImage.texture = buildingsInfluence[1];
+        if (troopsRawImage)    troopsRawImage   .texture = troopsInfluence;
     }
 
     private Vector2 WorldToTexture(Vector3 worldCoords)
@@ -226,7 +230,7 @@ public class InfluenceManager : MonoBehaviour
         int arrayIdx = TextureToArray(texCoords, buildingsInfluence[0].width);
 
         if (factionID is Faction.unassignedID) {
-            return pixelData[arrayIdx] + pixelData[arrayIdx+1] + pixelData[arrayIdx+2];
+            return (pixelData[arrayIdx] + pixelData[arrayIdx+1] + pixelData[arrayIdx+2]) / (255f * 3);
         }
         return pixelData[arrayIdx+(int)factionID] / 255f;
     }

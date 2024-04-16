@@ -12,20 +12,20 @@ public class AIBot : Faction
 {
     [Serializable] public class UtilityData
     {
-        public float buildCastleNecessity    = 0;
-        public float buildBarracksNecessity  = 0;
-        public float buildResourceNecessity  = 0;
-        public float repairBuildingNecessity = 0;
-        public float guardBuildingNecessity  = 0;
-        public float formTroopsNecessity     = 0;
-        public float claimResourceNecessity  = 0;
-        public float attackTroopNecessity    = 0;
-        public float attackTileNecessity     = 0;
-        public float attackCastleNecessity   = 0;
+        public float buildCastleNecessity     = 0;
+        public float buildBarracksNecessity   = 0;
+        public float buildFarmNecessity       = 0;
+        public float buildLumbermillNecessity = 0;
+        public float buildMineNecessity       = 0;
+        public float repairBuildingNecessity  = 0;
+        public float guardBuildingNecessity   = 0;
+        public float formTroopsNecessity      = 0;
+        public float attackTroopNecessity     = 0;
+        public float attackTileNecessity      = 0;
+        public float attackCastleNecessity    = 0;
         
         public Building buildingToRepair = null;
         public Building buildingToGuard  = null;
-        public Tile  naturalResourceToClaim = null;
         public Troop enemyTroopToAttack = null;
         public Tile  enemyTileToAttack  = null;
     }
@@ -33,6 +33,7 @@ public class AIBot : Faction
     private UtilitySystem utilitySystem;
     [SerializeField] private UtilityData utilityData;
     private MapGenerator  mapGenerator;
+    private CostStorage   costStorage;
     private uint playerFactionID = Faction.unassignedID;
 
     public override void Awake()
@@ -44,6 +45,7 @@ public class AIBot : Faction
         utilitySystem.functionCallerScript = this;
         utilityData = new UtilityData();
         mapGenerator = FindObjectOfType<MapGenerator>();
+        costStorage  = FindObjectOfType<CostStorage>();
         
         StartCoroutine(Run());
     }
@@ -82,12 +84,27 @@ public class AIBot : Faction
     
     public float PlaceBuildingNecessity()
     {
+        // Early exit if the necessity was already evaluated this frame.
+        if (utilityData.buildCastleNecessity > 1e-3 && utilityData.buildBarracksNecessity > 1e-3 && utilityData.buildFarmNecessity > 1e-3 && utilityData.buildLumbermillNecessity > 1e-3 && utilityData.buildMineNecessity > 1e-3)
+            return Mathf.Max(utilityData.buildCastleNecessity, utilityData.buildBarracksNecessity, utilityData.buildFarmNecessity, utilityData.buildLumbermillNecessity, utilityData.buildMineNecessity);
+        
+        // Build barracks and farms when troops need to be formed.
         // TODO
-        return Mathf.Max(utilityData.buildCastleNecessity + utilityData.buildBarracksNecessity + utilityData.buildResourceNecessity);
+        
+        // Build lumbermills and mines when resources are lacking.
+        // TODO
+        
+        // Build a castle only if the faction has more than enough lumber/stone, and there is nothing else to build.
+        ActionCost castleCost = costStorage.GetBuildingCost(BuildingType.Castle);
+        utilityData.buildCastleNecessity = Mathf.Clamp01(lumber / (castleCost.lumber * 2) + stone / (castleCost.stone * 2));
+        utilityData.buildCastleNecessity = Mathf.Clamp01(utilityData.buildCastleNecessity - (utilityData.buildBarracksNecessity + utilityData.buildFarmNecessity + utilityData.buildLumbermillNecessity + utilityData.buildMineNecessity) * 0.2f);
+        
+        return Mathf.Max(utilityData.buildCastleNecessity, utilityData.buildBarracksNecessity, utilityData.buildFarmNecessity, utilityData.buildLumbermillNecessity, utilityData.buildMineNecessity);
     }
     
     public float RepairBuildingNecessity()
     {
+        // Early exit if the necessity was already evaluated this frame.
         if (utilityData.repairBuildingNecessity > 1e-3)
             return utilityData.repairBuildingNecessity;
         
@@ -106,6 +123,7 @@ public class AIBot : Faction
     
     public float GuardBuildingNecessity()
     {
+        // Early exit if the necessity was already evaluated this frame.
         if (utilityData.guardBuildingNecessity > 1e-3)
             return utilityData.guardBuildingNecessity;
         
@@ -115,24 +133,35 @@ public class AIBot : Faction
             Vector3 tilePos = tile.transform.position;
             float playerBuildingsInfluence = influenceManager.GetInfluence(tilePos, playerFactionID, InfluenceType.Buildings);
             float resourcesInfluence       = influenceManager.GetInfluence(tilePos, Faction.unassignedID, InfluenceType.Resources);
-            float influenceSum = playerBuildingsInfluence + resourcesInfluence;
+            float influenceSum = (playerBuildingsInfluence + resourcesInfluence) * 0.5f;
             if (utilityData.guardBuildingNecessity < influenceSum) {
                 utilityData.guardBuildingNecessity = influenceSum;
                 utilityData.buildingToGuard = tile.building;
             }
         }
-        return utilityData.guardBuildingNecessity; // TODO: check value and make sure it is fitted and clamped to the 0->1 range.
+        utilityData.guardBuildingNecessity = Mathf.Clamp01(utilityData.guardBuildingNecessity);
+        return utilityData.guardBuildingNecessity;
     }
     
     public float FormTroopsNecessity()
     {
+        // Early exit if the necessity was already evaluated this frame.
         if (utilityData.formTroopsNecessity > 1e-3)
             return utilityData.formTroopsNecessity;
-            
-        float cropsWeight = Mathf.Clamp01(crops * 0.05f);
-        float tilesOwnedWeight = Mathf.Clamp01(ownedTiles.Count * 0.1f);
-        float attackNecessityWeight = AttackNecessity();
-        utilityData.formTroopsNecessity = (cropsWeight + tilesOwnedWeight + attackNecessityWeight) / 3;
+        
+        // Form troops if many crops are available or many tiles are owned by the faction.
+        float cropsWeight      = Mathf.Clamp01(crops * 0.01f);
+        float tilesOwnedWeight = Mathf.Clamp01(ownedTiles.Count * 0.05f);
+        
+        // Form troops if attacking or guarding is necessary but there are not enough troops.
+        int   idleTroopsCount = CountIdleTroops();
+        float attackNecessityWeight = AttackNecessity()        - (idleTroopsCount + 4) * 0.1f;
+        float guardNecessityWeight  = GuardBuildingNecessity() - (idleTroopsCount + 4) * 0.1f;
+        
+        // Form troops if the player has more than the AI.
+        float playerDifferenceWeight = Mathf.Clamp01(Mathf.Max(FactionManager.playerFaction.troops.Count - troops.Count, 0) * 0.5f);
+        
+        utilityData.formTroopsNecessity = Mathf.Max(cropsWeight, tilesOwnedWeight, attackNecessityWeight, guardNecessityWeight, playerDifferenceWeight);
         return utilityData.formTroopsNecessity;
     }
     
@@ -151,7 +180,7 @@ public class AIBot : Faction
             Vector3 tilePos = tile.transform.position;
             float resourcesInfluence = influenceManager.GetInfluence(tilePos, Faction.unassignedID, InfluenceType.Resources);
             float troopsInfluence    = influenceManager.GetInfluence(tilePos, playerFactionID, InfluenceType.Troops);
-            float troopsInfluenceInv = troopsInfluence >= 1 ? 1 / troopsInfluence : 1 - troopsInfluence;
+            float troopsInfluenceInv = troopsInfluence > 1 ? 1 / troopsInfluence : 1 - troopsInfluence;
             
             // Target strategic enemy position (resource-rich area).
             if (resourcesInfluence > utilityData.attackTileNecessity) {
@@ -165,46 +194,10 @@ public class AIBot : Faction
                 utilityData.enemyTileToAttack   = tile;
             }
         }
-
-        /*
-        NavMeshPath pathToCastle = new();
-        NavMesh.CalculatePath(spawnTile.transform.position, FactionManager.playerFaction.spawnTile.transform.position, 1, pathToCastle);
         
-        Func<Vector3, bool> evaluateInfluenceOnPath = (Vector3 pos) =>
-        {
-            float troopsInfluence    = influenceManager.GetInfluence(pos, playerFactionID, InfluenceType.Troops);
-            float buildingsInfluence = influenceManager.GetInfluence(pos, playerFactionID, InfluenceType.Buildings);
-            float influence = troopsInfluence + buildingsInfluence;
-            if (influence > 1) {
-                enemyOnCastlePathWeight = Mathf.Clamp01(troops.Count * 0.05f);
-                return true;
-            }
-            return false;
-        };
-        
-        for (uint i = 0; i < pathToCastle.corners.Length; i++)
-        {
-            Vector3 corner = pathToCastle.corners[i];
-            
-            // Evaluate the corner position first.
-            if (evaluateInfluenceOnPath(corner)) break;
-            
-            // Evaluate positions between the current corner and the next.
-            if (i >= pathToCastle.corners.Length - 1) break;
-            for (int j = 0; j < 50; j++)
-            {
-                Vector3 nextCorner = pathToCastle.corners[i + 1];
-                Vector3 curToNextDir = (nextCorner - corner).normalized;
-                Vector3 incrementPoint = corner + curToNextDir * 5;
-                Vector3 incrementToNextDir = (nextCorner - incrementPoint).normalized;
-                
-                if (evaluateInfluenceOnPath(incrementPoint)) break;
-                
-                // Stop loop if the next corner has been passed.
-                if (Vector3.Dot(curToNextDir, incrementToNextDir) < 0) break;
-            }
-        }
-        */
+        // Target enemy troops.
+        // float targetTileTroopsInfluence = influenceManager.GetInfluence(utilityData.enemyTileToAttack.transform.position, playerFactionID, InfluenceType.Troops);
+        // TODO
         
         return Mathf.Max(utilityData.attackCastleNecessity, utilityData.attackTileNecessity, utilityData.attackTroopNecessity);
     }
@@ -215,7 +208,37 @@ public class AIBot : Faction
     
     public void PlaceBuilding()
     {
+        float max = PlaceBuildingNecessity();
         
+        // Place a castle.
+        if (utilityData.buildCastleNecessity - max < 1e-3)
+        {
+            // TODO
+        }
+        
+        // Place barracks.
+        else if (utilityData.buildBarracksNecessity - max < 1e-3)
+        {
+            // TODO
+        }
+        
+        // Place a farm.
+        else if (utilityData.buildFarmNecessity - max < 1e-3)
+        {
+            // TODO
+        }
+        
+        // Place a lumbermill.
+        else if (utilityData.buildLumbermillNecessity - max < 1e-3)
+        {
+            // TODO
+        }
+        
+        // Place a mine.
+        else if (utilityData.buildMineNecessity - max < 1e-3)
+        {
+            // TODO
+        }
     }
     
     public void RepairBuilding()
@@ -232,12 +255,39 @@ public class AIBot : Faction
     
     public void FormTroops()
     {
-        
+        // TODO
     }
     
     public void Attack()
     {
+        float max = AttackNecessity();
         
+        // Attack the enemy castle.
+        if (utilityData.attackCastleNecessity - max < 1e-3)
+        {
+            SelectAllTroops();
+            crowd.ForceState("Navigate");
+            NavMesh.SamplePosition(FactionManager.playerFaction.spawnTile.transform.position, out var hit, 10.0f, 1);
+            crowd.SetCrowdDestination(hit.position);
+        }
+        
+        // Attack an enemy tile.
+        else if (utilityData.attackTileNecessity - max < 1e-3)
+        {
+            crowd.RemoveAllTroops();
+            SelectIdleTroops();
+            crowd.ForceState("Attack");
+            crowd.SetCrowdTarget(utilityData.enemyTileToAttack.building);
+        }
+        
+        // Attack an enemy troop.
+        else if (utilityData.attackTroopNecessity - max < 1e-3)
+        {
+            crowd.RemoveAllTroops();
+            SelectIdleTroops();
+            crowd.ForceState("Attack");
+            crowd.SetCrowdTarget(utilityData.enemyTroopToAttack);
+        }
     }
     
     #endregion
@@ -246,13 +296,40 @@ public class AIBot : Faction
     
     void SelectAllTroops()
     {
-        for (int i = 0; i < troops.Count; i++)
+        foreach (var troop in troops)
         {
-            crowd.AddTroop(troops[i]);
+            crowd.AddTroop(troop);
         }
 
         crowd.ComputeSlowestTroopSpeed();
         crowd.LimitCrowdSpeedToSlowest();
+    }
+    
+    void SelectIdleTroops()
+    {
+        foreach (Troop troop in troops)
+        {
+            if (troop.GetStateMachine().GetCurrentStateName() is "Idle")
+            {
+                crowd.AddTroop(troop);
+            }
+        }
+
+        crowd.ComputeSlowestTroopSpeed();
+        crowd.LimitCrowdSpeedToSlowest();
+    }
+    
+    int CountIdleTroops()
+    {
+        int count = 0;
+        foreach (Troop troop in troops)
+        {
+            if (troop.GetStateMachine().GetCurrentStateName() is "Idle")
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     void MoveCrowd()

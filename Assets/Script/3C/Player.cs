@@ -130,6 +130,7 @@ public class Player : Faction
 
         else if (Input.GetMouseButtonUp(0))
         {
+            SelectTroopsInBox();
             RectTransform selectionBox = uiManager.GetSelectionBox();
             selectionBox.sizeDelta = Vector2.zero;
             selectionBox.gameObject.SetActive(false);
@@ -188,7 +189,11 @@ public class Player : Faction
         RectTransform selectionBox = uiManager.GetSelectionBox();
         selectionBox.anchoredPosition = selectionStartScreen + new Vector2(width / 2, height / 2);
         selectionBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
-        
+    }
+    
+    private void SelectTroopsInBox()
+    {
+        RectTransform selectionBox = uiManager.GetSelectionBox();
         Bounds bounds = new Bounds(selectionBox.anchoredPosition, selectionBox.sizeDelta);
         foreach (var troop in troops)
         {

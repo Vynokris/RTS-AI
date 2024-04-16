@@ -12,6 +12,7 @@ public class Coordinator : MonoBehaviour
     private Formation formation = Formation.None;
 
     private Vector3 position;
+    private Vector3 crowdDestination;
     //private float radius;
 
     private HashSet<Troop> troops;
@@ -154,7 +155,13 @@ public class Coordinator : MonoBehaviour
 
     public void SetCrowdDestination(Vector3 destination)
     {
-        agent.SetDestination(destination);
+        crowdDestination = destination;
+        agent.SetDestination(crowdDestination);
+    }
+    
+    public Vector3 GetCrowdDestination()
+    {
+        return crowdDestination;
     }
 
     public void SetFormation(Formation newFormation)
