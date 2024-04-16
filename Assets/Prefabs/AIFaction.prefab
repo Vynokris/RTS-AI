@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5397773712922988007}
   - component: {fileID: 4934265400839250682}
   m_Layer: 0
-  m_Name: AIPlayer
+  m_Name: AIFaction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -50,6 +50,19 @@ MonoBehaviour:
   crops: 10
   lumber: 10
   stone: 10
+  utilityData:
+    buildCastleNecessity: 0
+    buildBarracksNecessity: 0
+    buildFarmNecessity: 0
+    buildLumbermillNecessity: 0
+    buildMineNecessity: 0
+    repairBuildingNecessity: 0
+    guardBuildingNecessity: 0
+    formTroopsNecessity: 0
+    attackBuildingNecessity: 0
+    buildingToRepair: {fileID: 0}
+    buildingToGuard: {fileID: 0}
+    buildingToAttack: {fileID: 0}
 --- !u!114 &4934265400839250682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,9 +76,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actions:
-  - {fileID: 11400000, guid: 2caf5b3dfc04ca74b8fbec0e038b8095, type: 2}
-  - {fileID: 11400000, guid: 4bec51eb1f09f6b44a7f4e05f1e930ad, type: 2}
-  - {fileID: 11400000, guid: c69f9be5b3f72984483ca27962ffed25, type: 2}
+  - {fileID: 11400000, guid: c2e564166d5988d4688abb939c55ff3e, type: 2}
+  - {fileID: 11400000, guid: e50745b4cddc2914e8998a1b96bdb3e3, type: 2}
   - {fileID: 11400000, guid: 6079a525913091d4ca73f5c68c73edbc, type: 2}
   - {fileID: 11400000, guid: 17c4cfca916eb384d905edf32e52b516, type: 2}
   functionCallerScript: {fileID: 0}

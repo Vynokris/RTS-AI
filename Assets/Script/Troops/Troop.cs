@@ -86,7 +86,8 @@ public class Troop : MonoBehaviour
                 if (Vector3.Distance(transform.position, enemy.transform.position) < blackBoard.GetRange())
                 {
                     blackBoard.SetTarget(enemy);
-                    blackBoard.GetBuildingTarget().TakeDamage(blackBoard.GetDamage());
+                    Building target = blackBoard.GetBuildingTarget();
+                    if (target) target.TakeDamage(blackBoard.GetDamage());
                     break;
                 }
             }
@@ -280,8 +281,8 @@ public class Troop : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         Troop troop = other.gameObject.GetComponent<Troop>();
-
-        if (sphereTriggerLayer == (sphereTriggerLayer | (1 << other.gameObject.layer)) || troop.owningFaction == owningFaction)
+        
+        if (!troop || troop.owningFaction == owningFaction || sphereTriggerLayer == (sphereTriggerLayer | (1 << other.gameObject.layer)))
             return;
 
         blackBoard.GetNearingEnemies().Remove(troop);

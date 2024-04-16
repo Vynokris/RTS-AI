@@ -71,10 +71,10 @@ public class InfluenceManager : MonoBehaviour
         troopsInfluence      .wrapMode = TextureWrapMode.Clamp;
         
         resourcesInfluence[0].SetPixelData(emptyPixelData, 0);
-        resourcesInfluence[1].SetPixelData(emptyPixelData, 0);
+        // resourcesInfluence[1].SetPixelData(emptyPixelData, 0);
         buildingsInfluence[0].SetPixelData(emptyPixelData, 0);
-        buildingsInfluence[1].SetPixelData(emptyPixelData, 0);
-        troopsInfluence      .SetPixelData(emptyPixelData, 0);
+        // buildingsInfluence[1].SetPixelData(emptyPixelData, 0);
+        // troopsInfluence      .SetPixelData(emptyPixelData, 0);
         
         blurRenderTexture = new RenderTexture((int)textureSize.x, (int)textureSize.y, 0);
         blurRenderTexture.format = RenderTextureFormat.ARGB32;
@@ -98,7 +98,7 @@ public class InfluenceManager : MonoBehaviour
 
     private int TextureToArray(Vector2 texCoords, int texWidth)
     {
-        int idx = (Mathf.RoundToInt(texCoords.y) * texWidth + Mathf.RoundToInt(texCoords.x)) * 4;
+        int idx = (Mathf.FloorToInt(texCoords.y) * texWidth + Mathf.FloorToInt(texCoords.x)) * 4;
         if (idx >= textureSize.x * textureSize.y * 4)
             return (int)(textureSize.x * textureSize.y) * 4 - 1;
         return idx;

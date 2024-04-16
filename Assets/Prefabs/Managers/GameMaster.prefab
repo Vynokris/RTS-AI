@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dd57fd83302d7419fbc2b695b933ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerGameObject: {fileID: 2155017811794067266, guid: a4e1ae457704c4e4bb0661304ce57368,
+  playerFactionPrefab: {fileID: 2155017811794067266, guid: a4e1ae457704c4e4bb0661304ce57368,
     type: 3}
-  aiGameObject: {fileID: 64051042893017158, guid: 4f9f62504871be246a03337710cd4f09,
+  aiFactionPrefab: {fileID: 64051042893017158, guid: 4f9f62504871be246a03337710cd4f09,
     type: 3}
   playerCount: 2

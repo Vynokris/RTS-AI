@@ -1,14 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class FactionManager : MonoBehaviour
 {
-    [SerializeField] private GameObject playerGameObject;
-    [SerializeField] private GameObject aiGameObject;
+    [SerializeField] private GameObject playerFactionPrefab;
+    [SerializeField] private GameObject aiFactionPrefab;
 
     [SerializeField] private int playerCount = 2;
 
@@ -21,14 +19,14 @@ public class FactionManager : MonoBehaviour
     {
         influenceManager = FindObjectOfType<InfluenceManager>();
         
-        Player player = Instantiate(playerGameObject).GetComponent<Player>();
+        Player player = Instantiate(playerFactionPrefab).GetComponent<Player>();
         player.AssignID(0);
         factions.Add(player.GetID(), player);
         playerFaction = player;
 
         for (uint i = 1; i < playerCount; i++)
         {
-            Faction ai = Instantiate(aiGameObject).GetComponent<Faction>();
+            Faction ai = Instantiate(aiFactionPrefab).GetComponent<AIFaction>();
             ai.AssignID(i);
             factions.Add(ai.GetID(), ai);
         }

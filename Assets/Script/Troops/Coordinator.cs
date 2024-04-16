@@ -18,13 +18,11 @@ public class Coordinator : MonoBehaviour
     private HashSet<Troop> troops;
     private float timer;
 
-    // Start is called before the first frame update
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         timer -= Time.deltaTime;

@@ -31,24 +31,6 @@ public class Building : MonoBehaviour
         }
     }
 
-    public void Repair()
-    {
-        if (repairing) return;
-        StartCoroutine(RepairOverTime());
-    }
-    
-    private IEnumerator RepairOverTime()
-    {
-        repairing = true;
-        float healthRepaired = 0;
-        while (health < maxHealth && healthRepaired < maxHealth)
-        {
-            health += (maxHealth / repairDuration) * Time.deltaTime;
-            yield return null;
-        }
-        repairing = false;
-    }
-
     private void Start()
     {
         maxHealth = serializedMaxHealth;

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class UtilitySystem : MonoBehaviour
 {
@@ -11,23 +12,35 @@ public class UtilitySystem : MonoBehaviour
 
     public void PerformBestAction()
     {
-        PerformAction(ChooseAction());
+        UtilityAction action = ChooseAction();
+        Debug.Log(action.name);
+        PerformAction(action);
     }
     
     public UtilityAction ChooseAction()
     {
-        float bestScore = float.MinValue;
-        UtilityAction bestAction = null;
-        foreach (UtilityAction action in actions)
+        // Evaluate each available action.
+        List<(UtilityAction, float)> evaluatedActions = EvaluateActions();
+        float sum = 0; evaluatedActions.ForEach(element => sum += element.Item2);
+
+        // Normalize the evaluated values into a probability distribution.
+        for (int i = 0; i < evaluatedActions.Count; i++) 
         {
-            float score = EvaluateAction(action);
-            if (score > bestScore)
-            {
-                bestScore  = score;
-                bestAction = action;
+            evaluatedActions[i] = (evaluatedActions[i].Item1, evaluatedActions[i].Item2 / sum);
+        }
+        
+        // Randomly choose an action using the probability distribution as weights.
+        float rand = Random.Range(0f, 1f);
+        sum = 0; UtilityAction selectedAction = actions[0];
+        foreach (var element in evaluatedActions)
+        {
+            sum += element.Item2;
+            if (rand < sum) {
+                selectedAction = element.Item1;
+                break;
             }
         }
-        return bestAction;
+        return selectedAction;
     }
 
     public List<(UtilityAction, float)> EvaluateActions()
@@ -36,9 +49,8 @@ public class UtilitySystem : MonoBehaviour
         foreach (UtilityAction action in actions)
         {
             float score = EvaluateAction(action);
-            evaluatedActions.Add((action, score));
+            evaluatedActions.Add((action,score));
         }
-        evaluatedActions.Sort((x, y) => x.Item2 < y.Item2 ? 1 : -1);
         return evaluatedActions;
     }
 

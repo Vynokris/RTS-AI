@@ -1,15 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using Unity.AI.Navigation;
-using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Analytics;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-public class AIBot : Faction
+public class AIFaction : Faction
 {
     [Serializable] public class UtilityData
     {
@@ -21,14 +17,11 @@ public class AIBot : Faction
         public float repairBuildingNecessity  = 0;
         public float guardBuildingNecessity   = 0;
         public float formTroopsNecessity      = 0;
-        public float attackTroopNecessity     = 0;
-        public float attackTileNecessity      = 0;
-        public float attackCastleNecessity    = 0;
+        public float attackBuildingNecessity  = 0;
         
         public Building buildingToRepair = null;
         public Building buildingToGuard  = null;
-        public Troop enemyTroopToAttack = null;
-        public Tile  enemyTileToAttack  = null;
+        public Building buildingToAttack = null;
     }
     
     private UtilitySystem utilitySystem;
@@ -41,7 +34,7 @@ public class AIBot : Faction
         base.Awake();
         
         utilitySystem = GetComponent<UtilitySystem>();
-        utilitySystem.functionCallerType   = typeof(AIBot);
+        utilitySystem.functionCallerType   = typeof(AIFaction);
         utilitySystem.functionCallerScript = this;
         utilityData = new UtilityData();
         mapGenerator = FindObjectOfType<MapGenerator>();
@@ -97,19 +90,7 @@ public class AIBot : Faction
             return utilityData.buildFarmNecessity = 1;
         }
         
-        // Build barracks when no idle troops are available, and there are enough resources available.
-        /*
-        int        idleTroopsCount  = CountIdleTroops();
-        float      idleTroopsWeight = idleTroopsCount <= 0 ? 1 : 1f / idleTroopsCount;
-        ActionCost barracksCost     = costStorage.GetBuildingCost(BuildingType.Barracks);
-        Vector3    barracksRatios   = barracksCost.RatioOwnedToNecessary(crops, lumber, stone);
-        utilityData.buildBarracksNecessity = idleTroopsWeight * Mathf.Min(barracksRatios.x, barracksRatios.y, barracksRatios.z);
-        
-        // Build more farms when the number of barracks increases.
-        utilityData.buildFarmNecessity = Mathf.Clamp01((ownedBuildings[BuildingType.Barracks].Count - (float)ownedBuildings[BuildingType.Farm].Count) * 0.5f);
-        */
-        
-        // Build lumbermills and mines when resources are lacking.
+        // Maintain a certain proportion of each building.
         utilityData.buildLumbermillNecessity = Mathf.Clamp01(0.1f  * ownedTiles.Count / ownedBuildings[BuildingType.Lumbermill].Count);
         utilityData.buildMineNecessity       = Mathf.Clamp01(0.1f  * ownedTiles.Count / ownedBuildings[BuildingType.Mine].Count);
         utilityData.buildFarmNecessity       = Mathf.Clamp01(0.09f * ownedTiles.Count / ownedBuildings[BuildingType.Farm].Count);
@@ -123,105 +104,76 @@ public class AIBot : Faction
         return Mathf.Max(utilityData.buildCastleNecessity, utilityData.buildBarracksNecessity, utilityData.buildFarmNecessity, utilityData.buildLumbermillNecessity, utilityData.buildMineNecessity);
     }
     
-    public float RepairBuildingNecessity()
-    {
-        // Early exit if the necessity was already evaluated this frame.
-        if (utilityData.repairBuildingNecessity > 1e-3)
-            return utilityData.repairBuildingNecessity;
-        
-        foreach (Tile tile in ownedTiles)
-        {
-            if (tile.buildingType is BuildingType.None) continue;
-            float healthRatioInv = 1 - tile.building.health / tile.building.maxHealth;
-            
-            if (utilityData.repairBuildingNecessity < healthRatioInv) {
-                utilityData.repairBuildingNecessity = healthRatioInv;
-                utilityData.buildingToRepair = tile.building;
-            }
-        }
-        return utilityData.repairBuildingNecessity;
-    }
-    
-    public float GuardBuildingNecessity()
-    {
-        return 0;
-        // Early exit if the necessity was already evaluated this frame.
-        if (utilityData.guardBuildingNecessity > 1e-3)
-            return utilityData.guardBuildingNecessity;
-        
-        foreach (Tile tile in ownedTiles)
-        {
-            if (tile.buildingType is BuildingType.None) continue; // TODO: continue if the building is already guarded.
-            Vector3 tilePos = tile.transform.position;
-            float playerBuildingsInfluence = influenceManager.GetInfluence(tilePos, playerFactionID, InfluenceType.Buildings);
-            float playerTroopsInfluence    = influenceManager.GetInfluence(tilePos, playerFactionID, InfluenceType.Troops);
-            float resourcesInfluence       = influenceManager.GetInfluence(tilePos, Faction.unassignedID, InfluenceType.Resources);
-            float influenceMax = Mathf.Max(playerBuildingsInfluence, playerTroopsInfluence, resourcesInfluence);
-            if (utilityData.guardBuildingNecessity < influenceMax) {
-                utilityData.guardBuildingNecessity = influenceMax;
-                utilityData.buildingToGuard = tile.building;
-            }
-        }
-        utilityData.guardBuildingNecessity = Mathf.Clamp01(utilityData.guardBuildingNecessity);
-        return utilityData.guardBuildingNecessity;
-    }
-    
     public float FormTroopsNecessity()
     {
         // Early exit if the necessity was already evaluated this frame.
         if (utilityData.formTroopsNecessity > 1e-3)
             return utilityData.formTroopsNecessity;
         
+        // Return 0 if no barracks have been built.
+        if (ownedBuildings[BuildingType.Barracks].Count <= 0)
+            return utilityData.formTroopsNecessity = 0;
+        
         // Form troops if many crops are available or many tiles are owned by the faction.
         float cropsWeight      = Mathf.Clamp01(crops * 0.01f);
-        float tilesOwnedWeight = Mathf.Clamp01(ownedTiles.Count * 0.05f);
+        float tilesOwnedWeight = Mathf.Clamp01(ownedTiles.Count / (troops.Count * 2f));
         
-        // Form troops if attacking or guarding is necessary but there are not enough troops.
-        int   idleTroopsCount = CountIdleTroops();
-        float attackNecessityWeight = AttackNecessity()        - (idleTroopsCount + 4) * 0.1f;
-        float guardNecessityWeight  = GuardBuildingNecessity() - (idleTroopsCount + 4) * 0.1f;
+        // Form troops if there are not many idle troops.
+        // int   idleTroops = CountIdleTroops();
+        // float attackNecessityWeight = (float)troops.Count / idleTroops;
+        float attackNecessityWeight = 0; // TODO
         
         // Form troops if the player has more than the AI.
-        float playerDifferenceWeight = Mathf.Clamp01(Mathf.Max(FactionManager.playerFaction.troops.Count - troops.Count, 0) * 0.5f);
+        float playerDifferenceWeight = Mathf.Clamp(Mathf.Max(FactionManager.playerFaction.troops.Count - troops.Count, 0) * 0.5f, 0, 0.9f);
         
-        utilityData.formTroopsNecessity = Mathf.Max(cropsWeight, tilesOwnedWeight, attackNecessityWeight, guardNecessityWeight, playerDifferenceWeight);
+        utilityData.formTroopsNecessity = Mathf.Max(cropsWeight, tilesOwnedWeight, attackNecessityWeight, playerDifferenceWeight);
         return utilityData.formTroopsNecessity;
     }
-    
-    public float AttackNecessity()
+
+    public float GuardBuildingNecessity()
     {
         // Early exit if the necessity was already evaluated this frame.
-        if (utilityData.attackCastleNecessity > 1e-3 && utilityData.attackTileNecessity > 1e-3 && utilityData.attackTroopNecessity > 1e-3)
-            return Mathf.Max(utilityData.attackCastleNecessity, utilityData.attackTileNecessity, utilityData.attackTroopNecessity);
+        if (utilityData.guardBuildingNecessity > 1e-3) return utilityData.guardBuildingNecessity;
         
-        // Constant drive to attack the enemy castle based on number of troops formed (maxed out at 50 troops).
-        utilityData.attackCastleNecessity = Mathf.Clamp01(troops.Count * 0.02f);
+        // Guard buildings that are in danger.
+        foreach (Tile tile in ownedTiles)
+        {
+            Vector3 tilePos = tile.transform.position;
+            float enemyTroopsInfluence = influenceManager.GetInfluence(tilePos, playerFactionID, InfluenceType.Troops);
+
+            if (enemyTroopsInfluence > utilityData.guardBuildingNecessity) {
+                utilityData.guardBuildingNecessity = enemyTroopsInfluence;
+                utilityData.buildingToGuard        = tile.building;
+            }
+        }
+        return utilityData.guardBuildingNecessity;
+    }
+    
+    public float AttackBuildingNecessity()
+    {
+        // Early exit if the necessity was already evaluated this frame.
+        if (utilityData.attackBuildingNecessity > 1e-3) return utilityData.attackBuildingNecessity;
         
-        // Target enemy tiles.
+        // Return 0 if no barracks have been built.
+        if (ownedBuildings[BuildingType.Barracks].Count <= 0)
+            return utilityData.formTroopsNecessity = 0;
+        
+        // Target strategic enemy positions (resource-rich areas), that are poorly defended.
         foreach (Tile tile in FactionManager.playerFaction.ownedTiles)
         {
             Vector3 tilePos = tile.transform.position;
             float resourcesInfluence = influenceManager.GetInfluence(tilePos, Faction.unassignedID, InfluenceType.Resources);
             float troopsInfluence    = influenceManager.GetInfluence(tilePos, playerFactionID, InfluenceType.Troops);
             float troopsInfluenceInv = troopsInfluence > 1 ? 1 / troopsInfluence : 1 - troopsInfluence;
+            bool  isSpawn            = tile == FactionManager.playerFaction.spawnTile;
+            float overallInfluence   = Mathf.Clamp01(resourcesInfluence * 0.8f + troopsInfluenceInv * 0.2f + (isSpawn ? troops.Count * 0.02f : 0));
             
-            // Target strategic enemy position (resource-rich area).
-            if (resourcesInfluence > utilityData.attackTileNecessity) {
-                utilityData.attackTileNecessity = resourcesInfluence;
-                utilityData.enemyTileToAttack   = tile;
-            }
-
-            // Target poorly defended tiles.
-            if (troopsInfluenceInv > utilityData.attackTileNecessity) {
-                utilityData.attackTileNecessity = troopsInfluenceInv;
-                utilityData.enemyTileToAttack   = tile;
+            if (overallInfluence > utilityData.attackBuildingNecessity) {
+                utilityData.attackBuildingNecessity = overallInfluence;
+                utilityData.buildingToAttack        = tile.building;
             }
         }
-        
-        // Target enemy troops.
-        // TODO
-        
-        return Mathf.Max(utilityData.attackCastleNecessity, utilityData.attackTileNecessity, utilityData.attackTroopNecessity);
+        return utilityData.attackBuildingNecessity * Mathf.Clamp01(troops.Count / ((FactionManager.playerFaction.troops.Count + 1) * 0.75f));
     }
     
     #endregion
@@ -231,7 +183,6 @@ public class AIBot : Faction
     public void PlaceBuilding()
     {
         float max = PlaceBuildingNecessity();
-        // TODO: Check that this works.
         BuildingType buildingType = Mathf.Abs(utilityData.buildCastleNecessity     - max) < 1e-3 ? BuildingType.Castle
                                   : Mathf.Abs(utilityData.buildBarracksNecessity   - max) < 1e-3 ? BuildingType.Barracks
                                   : Mathf.Abs(utilityData.buildFarmNecessity       - max) < 1e-3 ? BuildingType.Farm
@@ -248,6 +199,7 @@ public class AIBot : Faction
             case BuildingType.Barracks:
             case BuildingType.Farm:
             {
+                // Find a random tile not too far from the spawn point where the building can be placed.
                 float randRange = 3;
                 for (int i = 0; i < 100; i++)
                 {
@@ -283,8 +235,6 @@ public class AIBot : Faction
                         closestTile = resourceTile;
                     }
                 }
-
-                // Create the building if possible.
                 if (!closestTile) break;
                 CreateBuilding(closestTile, buildingType);
                 break;
@@ -292,24 +242,9 @@ public class AIBot : Faction
         }
     }
     
-    public void RepairBuilding()
-    {
-        if (utilityData.buildingToRepair is null) return;
-        utilityData.buildingToRepair.Repair();
-    }
-    
-    public void GuardBuilding()
-    {
-        if (utilityData.buildingToGuard is null) return;
-        crowd.RemoveAllTroops();
-        SelectTroops("Idle", TroopType.Knight, 5);
-        crowd.ForceState("Guard");
-        crowd.SetCrowdTarget(utilityData.buildingToGuard);
-    }
-    
     public void FormTroops()
     {
-        bool canTrain = true;
+        bool canTrain = ownedBuildings[BuildingType.Barracks].Count > 0;
         while (canTrain)
         {
             foreach (Building barracks in ownedBuildings[BuildingType.Barracks])
@@ -322,50 +257,39 @@ public class AIBot : Faction
             }
         }
     }
-    
-    public void Attack()
+
+    public void GuardBuilding()
     {
-        float max = AttackNecessity();
-        
-        // Attack the enemy castle.
-        if (Mathf.Abs(utilityData.attackCastleNecessity - max) < 1e-3)
-        {
-            SelectTroops();
-            crowd.ForceState("Navigate");
-            NavMesh.SamplePosition(FactionManager.playerFaction.spawnTile.transform.position, out var hit, 10.0f, 1);
-            crowd.SetCrowdDestination(hit.position);
-        }
-        
-        // Attack an enemy tile.
-        else if (Mathf.Abs(utilityData.attackTileNecessity - max) < 1e-3)
-        {
-            crowd.RemoveAllTroops();
-            SelectTroops("Idle");
-            crowd.ForceState("Attack");
-            crowd.SetCrowdTarget(utilityData.enemyTileToAttack.building);
-        }
-        
-        // Attack an enemy troop.
-        else if (Mathf.Abs(utilityData.attackTroopNecessity - max) < 1e-3)
-        {
-            crowd.RemoveAllTroops();
-            SelectTroops("Idle");
-            crowd.ForceState("Attack");
-            crowd.SetCrowdTarget(utilityData.enemyTroopToAttack);
-        }
+        crowd.RemoveAllTroops();
+        SelectTroops("Idle");
+        SelectTroops("Guard", null, -1, false);
+        crowd.ForceState("Guard");
+        crowd.SetCrowdTarget(utilityData.buildingToGuard);
+    }
+    
+    public void AttackBuilding()
+    {
+        crowd.RemoveAllTroops();
+        SelectTroops("Idle");
+        SelectTroops("Guard", null, -1, false);
+        crowd.ForceState("Attack");
+        crowd.SetCrowdTarget(utilityData.buildingToAttack);
     }
     
     #endregion
 
     #region UtilityMethods
     
-    void SelectTroops(string state = null, TroopType? troopType = null, int maxSelected = -1)
+    void SelectTroops(string state = null, TroopType? troopType = null, int maxSelected = -1, bool? withNearbyEnemies = null)
     {
         int counter = 0;
         foreach (Troop troop in troops)
         {
-            if ((troopType is null || troop.type == troopType) &&
-                (state is null || troop.GetStateMachine().GetCurrentStateName() == state))
+            bool enemiesNearby = troop.GetBlackBoard().GetNearingEnemies().Count > 0;
+            
+            if ((troopType         is null || troop.type == troopType) &&
+                (state             is null || troop.GetStateMachine().GetCurrentStateName() == state) &&
+                (withNearbyEnemies is null || enemiesNearby == withNearbyEnemies))
             {
                 crowd.AddTroop(troop);
                 counter++;

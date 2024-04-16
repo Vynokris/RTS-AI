@@ -8,5 +8,3 @@ public class UtilityAction : ScriptableObject
     public string evalFuncName;
     public string performFuncName;
 }
-
-
