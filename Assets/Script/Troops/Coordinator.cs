@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 public class Coordinator : MonoBehaviour
 {
-    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private CustomNavMeshAgent agent;
     [SerializeField] private float pathUpdateDelay = 0.5f;
 
     private Formation formation = Formation.None;
@@ -18,9 +18,10 @@ public class Coordinator : MonoBehaviour
     private float timer;
 
     // Start is called before the first frame update
-    void Start()
+
+    public void Awake()
     {
-        
+        agent = gameObject.AddComponent<CustomNavMeshAgent>();
     }
 
     // Update is called once per frame
@@ -147,7 +148,7 @@ public class Coordinator : MonoBehaviour
         agent.Warp(position);
     }
 
-    public NavMeshAgent GetAgent()
+    public CustomNavMeshAgent GetAgent()
     {
         return agent;
     }

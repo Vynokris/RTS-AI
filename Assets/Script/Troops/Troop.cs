@@ -9,7 +9,7 @@ public class Troop : MonoBehaviour
     [SerializeField] [LabelOverride("Unit Type")] protected TroopType serializedType;
     [SerializeField] protected SpriteRenderer selectionSprite;
 
-    [SerializeField] protected NavMeshAgent agent;
+    [SerializeField] protected CustomNavMeshAgent agent;
     [SerializeField] protected Animator animator;
 
     [SerializeField] protected FiniteStateMachine stateMachine;
@@ -27,6 +27,7 @@ public class Troop : MonoBehaviour
 
     private void Awake()
     {
+        agent = gameObject.AddComponent<CustomNavMeshAgent>();
         blackBoard.SetMaxSpeed(agent.speed);
         attackRefreshTimer = blackBoard.GetAttackDelay();
 
@@ -104,7 +105,7 @@ public class Troop : MonoBehaviour
         }
     }
 
-    public NavMeshAgent GetAgent()
+    public CustomNavMeshAgent GetAgent()
     {
         return agent;
     }

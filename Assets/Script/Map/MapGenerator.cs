@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Unity.AI.Navigation;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -8,9 +9,15 @@ namespace Generation
 {
     public class Node
     {
-        // TODO : use an int id for nodes comparison
+        public static int count = 0;
+        public int id;
         public Vector3 Position = Vector3.zero;
         public List<Node> Neighbours;
+        public int GCost;
+        public int HCost;
+        public Node Parent;
+
+        public int FCost => GCost + HCost;
     }
 
     public class Connection
@@ -292,10 +299,10 @@ namespace Generation
             RaycastHit hitInfo = new RaycastHit();
 
             // Always compute node Y pos from floor collision
-            if (Physics.Raycast(pos + Vector3.up * MaxHeight, Vector3.down, out hitInfo, MaxHeight + 1, 1 << LayerMask.NameToLayer("Tile")))
-            {
-                pos.y = hitInfo.point.y;
-            }
+            //if (Physics.Raycast(pos + Vector3.up * MaxHeight, Vector3.down, out hitInfo, MaxHeight + 1, 1 << LayerMask.NameToLayer("MapTile")))
+            //{
+            //    pos.y = hitInfo.point.y;
+            //}
 
             Node node = CreateNode();
             node.Position = pos;
@@ -339,18 +346,16 @@ namespace Generation
         }
 
         // Converts world 3d pos to tile 2d pos
-        public Vector2Int GetTileCoordFromPos(Vector3 pos)
-        {
-            Vector3 realPos = pos - GridStartPos;
-            Vector2Int tileCoords = Vector2Int.zero;
-            tileCoords.x = Mathf.FloorToInt(realPos.x / SquareSize);
-            tileCoords.y = Mathf.FloorToInt(realPos.z / SquareSize);
-            return tileCoords;
-        }
-
         public Node GetNode(Vector3 pos)
         {
-            return GetNode(GetTileCoordFromPos(pos));
+            Debug.DrawRay(pos, Vector3.down, Color.blue, 20);
+            if (Physics.Raycast(pos, Vector3.down, out RaycastHit hit, float.MaxValue, 1 << LayerMask.NameToLayer("MapTile")))
+            {
+                Debug.Log("Hit");
+                return hit.collider.gameObject.GetComponent<Tile>().GetNode();
+            }
+
+            return null;
         }
 
         public Node GetNode(Vector2Int pos)
@@ -399,7 +404,7 @@ namespace Generation
                 if (dir.x + dir.y + dir.z == 1)
                 {
                     if (Physics.Raycast(node.Position, Quaternion.AngleAxis(-25, new Vector3(dir.z, 0, dir.x)) * dir,
-                        out RaycastHit hit, float.MaxValue, -5, QueryTriggerInteraction.Ignore))
+                        out RaycastHit hit, float.MaxValue, 1 << LayerMask.NameToLayer("MapTile"), QueryTriggerInteraction.Ignore))
                     {
                         if (hit.collider.gameObject.TryGetComponent(out Tile tile))
                         {
@@ -411,7 +416,7 @@ namespace Generation
                 else
                 {
                     if (Physics.Raycast(node.Position, Quaternion.AngleAxis(-25, Vector3.Cross(dir, Vector3.up)) * dir,
-                        out RaycastHit hit, float.MaxValue, -5, QueryTriggerInteraction.Ignore))
+                        out RaycastHit hit, float.MaxValue, 1 << LayerMask.NameToLayer("MapTile"), QueryTriggerInteraction.Ignore))
                     {
                         if (hit.collider.gameObject.TryGetComponent(out Tile tile))
                         {

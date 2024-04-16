@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 621567776849912415}
-  - component: {fileID: 4479014012481248443}
   - component: {fileID: 2665936672750426290}
   - component: {fileID: 3483812977127833949}
   - component: {fileID: 6367270987568477225}
+  - component: {fileID: -5969587020538434705}
   m_Layer: 0
   m_Name: Coordinator
   m_TagString: Untagged
@@ -35,28 +35,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!195 &4479014012481248443
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6691457409772337576}
-  m_Enabled: 1
-  m_AgentTypeID: -1372625422
-  m_Radius: 0.1
-  m_Speed: 1
-  m_Acceleration: 2
-  avoidancePriority: 20
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0.5
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.5
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 0
 --- !u!33 &2665936672750426290
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -72,7 +50,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6691457409772337576}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -119,5 +97,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa61aa14ebd6b0647a3dcafe84ba058d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 4479014012481248443}
+  agent: {fileID: 0}
   pathUpdateDelay: 1
+--- !u!114 &-5969587020538434705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6691457409772337576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 271f99d2c6a05cb479e5ff35a5a371c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocity: {x: 0, y: 0, z: 0}
+  speed: 0
+  remainingDistance: 0
+  pathPending: 0
+  hasPath: 0

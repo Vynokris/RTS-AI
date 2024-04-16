@@ -547,10 +547,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2117313744518594303}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: -4639396982949776440}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
         type: 3}
@@ -560,6 +556,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5079043087594181268}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ca4d2e03b5c59204fa09dc2222a14265,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1709788935832420471}
   m_SourcePrefab: {fileID: 100100000, guid: ca4d2e03b5c59204fa09dc2222a14265, type: 3}
 --- !u!1 &184719126140870912 stripped
 GameObject:
@@ -579,8 +579,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28463751e8872e84289361aedde33b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  serializedType: 0
   selectionSprite: {fileID: 8218659980640435080}
-  agent: {fileID: 2117313744518594303}
+  agent: {fileID: 0}
   animator: {fileID: -4639396982949776440}
   stateMachine: {fileID: 4397071374817475783}
   blackBoard: {fileID: 2346776924639195495}
@@ -615,28 +616,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 222ccadbd59da0f4386dd49d9b49f57f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!195 &2117313744518594303
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 184719126140870912}
-  m_Enabled: 1
-  m_AgentTypeID: -1372625422
-  m_Radius: 0.5
-  m_Speed: 1
-  m_Acceleration: 2
-  avoidancePriority: 20
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0.5
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
 --- !u!95 &-4639396982949776440
 Animator:
   serializedVersion: 5
@@ -708,6 +687,23 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &-1709788935832420471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 184719126140870912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 271f99d2c6a05cb479e5ff35a5a371c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocity: {x: 0, y: 0, z: 0}
+  speed: 0
+  remainingDistance: 0
+  pathPending: 0
+  hasPath: 0
 --- !u!4 &710321609632168890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ca4d2e03b5c59204fa09dc2222a14265,
