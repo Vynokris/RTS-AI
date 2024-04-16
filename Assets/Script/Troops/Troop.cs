@@ -169,9 +169,10 @@ public class Troop : MonoBehaviour
     private void GuardState()
     {
         Building buildingTarget = blackBoard.GetBuildingTarget();
-        if (buildingTarget && Vector3.Distance(buildingTarget.transform.position, transform.position) < blackBoard.GetRange())
+
+        if (buildingTarget)
         {
-            agent.SetDestination(blackBoard.GetBuildingTarget().transform.position);
+            agent.SetDestination(blackBoard.GetBuildingTarget().transform.position + new Vector3(Random.Range(-2, 3), 0, Random.Range(-2, 3)));
         }
         
         else
