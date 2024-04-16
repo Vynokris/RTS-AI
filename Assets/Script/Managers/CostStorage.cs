@@ -12,6 +12,13 @@ using UnityEngine;
         return ownedCrops >= crops && ownedLumber >= lumber && ownedStone >= stone;
     }
 
+    public Vector3 RatioOwnedToNecessary(float ownedCrops, float ownedLumber, float ownedStone)
+    {
+        return new Vector3(crops  <= 0 ? 1 : crops  / ownedCrops, 
+                           lumber <= 0 ? 1 : lumber / ownedLumber, 
+                           stone  <= 0 ? 1 : stone  / ownedStone);
+    }
+
     /// Should only ever be used if CanPerform returns true.
     public void ForcePerform(ref float ownedCrops, ref float ownedLumber, ref float ownedStone)
     {
@@ -49,7 +56,6 @@ public class CostStorage : MonoBehaviour
     [Header("Troops")]
     public ActionCost troopKnight;
     public ActionCost troopArcher;
-    public ActionCost troopCavalier;
     public ActionCost troopGolem;
     
     public ActionCost GetBuildingCost(BuildingType type)
@@ -71,7 +77,6 @@ public class CostStorage : MonoBehaviour
         {
             TroopType.Knight   => troopKnight,
             TroopType.Archer   => troopArcher,
-            TroopType.Cavalier => troopCavalier,
             TroopType.Golem    => troopGolem,
             _ => new ActionCost()
         };

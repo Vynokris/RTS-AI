@@ -20,7 +20,6 @@ public class Player : Faction
     private Vector3 selectionStartWorld;
     
     private UiManager   uiManager;
-    private CostStorage costStorage;
     private Camera      cam;
     
     private bool inBuildMode = false;
@@ -31,7 +30,6 @@ public class Player : Faction
     {
         base.Awake();
         uiManager   = FindObjectOfType<UiManager>();
-        costStorage = FindObjectOfType<CostStorage>();
         cam         = Camera.main;
         selectionDefaultPlane = new Plane(Vector3.up, Vector3.zero);
         
@@ -41,10 +39,9 @@ public class Player : Faction
         uiManager.AddBuildingSelectButtonListener(BuildingType.Farm,       () => currentlyPlacingBuilding = BuildingType.Farm);
         uiManager.AddBuildingSelectButtonListener(BuildingType.Lumbermill, () => currentlyPlacingBuilding = BuildingType.Lumbermill);
         uiManager.AddBuildingSelectButtonListener(BuildingType.Mine,       () => currentlyPlacingBuilding = BuildingType.Mine);
-        uiManager.AddTroopSelectButtonListener(TroopType.Knight,   () => selectedBarracks?.AddTroopToTrain(TroopType.Knight));
-        uiManager.AddTroopSelectButtonListener(TroopType.Archer,   () => selectedBarracks?.AddTroopToTrain(TroopType.Archer));
-        uiManager.AddTroopSelectButtonListener(TroopType.Cavalier, () => selectedBarracks?.AddTroopToTrain(TroopType.Cavalier));
-        uiManager.AddTroopSelectButtonListener(TroopType.Golem,    () => selectedBarracks?.AddTroopToTrain(TroopType.Golem));
+        uiManager.AddTroopSelectButtonListener(TroopType.Knight, () => selectedBarracks?.AddTroopToTrain(TroopType.Knight));
+        uiManager.AddTroopSelectButtonListener(TroopType.Archer, () => selectedBarracks?.AddTroopToTrain(TroopType.Archer));
+        uiManager.AddTroopSelectButtonListener(TroopType.Golem,  () => selectedBarracks?.AddTroopToTrain(TroopType.Golem));
         
         // Move the camera to the faction's spawn tile.
         spawnTileAssigned.AddListener(() =>
@@ -157,7 +154,7 @@ public class Player : Faction
             {
                 hit.collider.gameObject.TryGetComponent(out Troop possibleTroop);
                 hit.collider.gameObject.TryGetComponent(out Tile tile);
-                Building possibleBuilding = tile.GetBuilding();
+                Building possibleBuilding = !tile ? null : tile.GetBuilding();
 
                 if (possibleTroop && possibleTroop?.owningFaction.id != id)
                 {
@@ -165,9 +162,13 @@ public class Player : Faction
                     crowd.SetCrowdTarget(possibleTroop);
                 }
 
-                else if (possibleBuilding && possibleBuilding.GetOwningTile().owningFaction.id != id)
+                else if (possibleBuilding)
                 {
-                    crowd.ForceState("Attack");
+                    if (possibleBuilding.GetOwningTile().owningFaction.id != id)
+                        crowd.ForceState("Attack");
+                    else
+                        crowd.ForceState("Guard");
+                    
                     crowd.SetCrowdTarget(possibleBuilding);
                 }
 
@@ -224,16 +225,7 @@ public class Player : Faction
                 if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
-                    
-                    ActionCost buildCost = costStorage.GetBuildingCost(currentlyPlacingBuilding);
-                    bool canSetBuilding  = tile.CanSetBuilding(currentlyPlacingBuilding);
-                    bool canPerform      = buildCost.CanPerform(crops, lumber, stone);
-                    
-                    if (canSetBuilding && canPerform) {
-                        tile.ForceSetBuilding(currentlyPlacingBuilding);
-                        buildCost.ForcePerform(ref crops, ref lumber, ref stone);
-                        TakeOwnership(tile);
-                    }
+                    CreateBuilding(tile, currentlyPlacingBuilding);
                 }
             }
 
@@ -244,13 +236,7 @@ public class Player : Faction
                 if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("MapTile")))
                 {
                     Tile tile = hit.transform.gameObject.GetComponent<Tile>();
-
-                    if (tile.buildingType is not BuildingType.None)
-                    {
-                        ActionCost buildCost = costStorage.GetBuildingCost(tile.buildingType);
-                        tile.RemoveBuilding();
-                        buildCost.Undo(ref crops, ref lumber, ref stone);
-                    }
+                    DestroyBuilding(tile, true);
                 }
             }
         }

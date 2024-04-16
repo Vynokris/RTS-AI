@@ -16,11 +16,13 @@ public class Faction : MonoBehaviour
     public float lumber = 10;
     public float stone  = 10;
     public Tile spawnTile { get; protected set; } = null;
-    public List<Tile>  ownedTiles { get; protected set; } = new();
-    public List<Troop> troops     { get; protected set; } = new();
+    public List<Tile> ownedTiles { get; protected set; } = new();
+    public Dictionary<BuildingType, List<Building>> ownedBuildings { get; protected set; } = new();
+    public List<Troop> troops { get; protected set; } = new();
     protected UnityEvent spawnTileAssigned = new();
     
     protected TroopStorage troopStorage;
+    protected CostStorage  costStorage;
     protected InfluenceManager influenceManager;
 
     public Faction() { id = unassignedID; }
@@ -29,7 +31,12 @@ public class Faction : MonoBehaviour
     public virtual void Awake()
     {
         troopStorage     = FindObjectOfType<TroopStorage>();
+        costStorage      = FindObjectOfType<CostStorage>();
         influenceManager = FindObjectOfType<InfluenceManager>();
+        
+        foreach (BuildingType type in Enum.GetValues(typeof(BuildingType))) {
+            ownedBuildings[type] = new List<Building>();
+        }
         
         spawnTileAssigned.AddListener(() =>
         {
@@ -97,6 +104,30 @@ public class Faction : MonoBehaviour
         troops.Remove(troop);
         crowd.RemoveTroop(troop);
         Destroy(troop.gameObject);
+    }
+
+    public bool CreateBuilding(Tile tile, BuildingType buildingType)
+    {
+        ActionCost buildCost = costStorage.GetBuildingCost(buildingType);
+        bool canSetBuilding  = tile.CanSetBuilding(buildingType);
+        bool canPerform      = buildCost.CanPerform(crops, lumber, stone);
+
+        if (!canSetBuilding || !canPerform) return false;
+        tile.ForceSetBuilding(buildingType);
+        buildCost.ForcePerform(ref crops, ref lumber, ref stone);
+        TakeOwnership(tile);
+        ownedBuildings[buildingType].Add(tile.building);
+        return true;
+    }
+
+    public bool DestroyBuilding(Tile tile, bool regainBuildResources)
+    {
+        if (tile.buildingType is BuildingType.None) return false;
+        ActionCost buildCost = costStorage.GetBuildingCost(tile.buildingType);
+        ownedBuildings[tile.buildingType].Remove(tile.building);
+        tile.RemoveBuilding();
+        if (regainBuildResources) buildCost.Undo(ref crops, ref lumber, ref stone);
+        return true;
     }
 
     public Crowd GetCrowd()

@@ -59,10 +59,16 @@ public class InfluenceManager : MonoBehaviour
         troopsInfluence       = new Texture2D((int)textureSize.x, (int)textureSize.y, TextureFormat.RGBA32, false);
         
         resourcesInfluence[0].filterMode = FilterMode.Point;
-        resourcesInfluence[1].filterMode = FilterMode.Point;
+        resourcesInfluence[1].filterMode = FilterMode.Bilinear;
         buildingsInfluence[0].filterMode = FilterMode.Point;
-        buildingsInfluence[1].filterMode = FilterMode.Point;
+        buildingsInfluence[1].filterMode = FilterMode.Bilinear;
         troopsInfluence      .filterMode = FilterMode.Point;
+        
+        resourcesInfluence[0].wrapMode = TextureWrapMode.Clamp;
+        resourcesInfluence[1].wrapMode = TextureWrapMode.Clamp;
+        buildingsInfluence[0].wrapMode = TextureWrapMode.Clamp;
+        buildingsInfluence[1].wrapMode = TextureWrapMode.Clamp;
+        troopsInfluence      .wrapMode = TextureWrapMode.Clamp;
         
         resourcesInfluence[0].SetPixelData(emptyPixelData, 0);
         resourcesInfluence[1].SetPixelData(emptyPixelData, 0);
@@ -92,7 +98,10 @@ public class InfluenceManager : MonoBehaviour
 
     private int TextureToArray(Vector2 texCoords, int texWidth)
     {
-        return (Mathf.RoundToInt(texCoords.y) * texWidth + Mathf.RoundToInt(texCoords.x)) * 4;
+        int idx = (Mathf.RoundToInt(texCoords.y) * texWidth + Mathf.RoundToInt(texCoords.x)) * 4;
+        if (idx >= textureSize.x * textureSize.y * 4)
+            return (int)(textureSize.x * textureSize.y) * 4 - 1;
+        return idx;
     }
 
     private Vector2 ArrayToTexture(int arrayIdx, int texWidth)

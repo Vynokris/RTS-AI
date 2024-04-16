@@ -36,6 +36,8 @@ public class MapGenerator : MonoBehaviour
         DestroyMap();
         BuildMap();
     }
+    
+    public Grid GetGrid() { return grid; }
 
     public void BuildMap()
     {

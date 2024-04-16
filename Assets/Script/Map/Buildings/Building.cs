@@ -26,9 +26,8 @@ public class Building : MonoBehaviour
     {
         health -= damage;
 
-        if (health <= 0)
-        {
-            owningTile.RemoveBuilding();
+        if (health <= 0) {
+            owningTile.owningFaction.DestroyBuilding(owningTile, false);
         }
     }
 

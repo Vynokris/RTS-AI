@@ -26,7 +26,6 @@ public class UiManager : MonoBehaviour
     public GameObject troopTrainingUI;
     public Button knightSelectButton;
     public Button archerSelectButton;
-    public Button cavalierSelectButton;
     public Button golemSelectButton;
     
     private Vector2 buildingUiDefaultPos;
@@ -58,7 +57,6 @@ public class UiManager : MonoBehaviour
         {
             TroopType.Knight   => knightSelectButton,
             TroopType.Archer   => archerSelectButton,
-            TroopType.Cavalier => cavalierSelectButton,
             TroopType.Golem    => golemSelectButton,
             _ => null
         };

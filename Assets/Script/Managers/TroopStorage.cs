@@ -7,7 +7,6 @@ public enum TroopType
     Coordinator,
     Knight,
     Archer,
-    Cavalier,
     Golem,
 }
 
@@ -16,7 +15,6 @@ public class TroopStorage : MonoBehaviour
     [SerializeField] private GameObject coordinatorPrefab;
     [SerializeField] private GameObject knightPrefab;
     [SerializeField] private GameObject archerPrefab;
-    [SerializeField] private GameObject cavalierPrefab;
     [SerializeField] private GameObject golemPrefab;
 
     public GameObject GetTroopPrefab(TroopType type)
@@ -26,7 +24,6 @@ public class TroopStorage : MonoBehaviour
             TroopType.Coordinator => coordinatorPrefab,
             TroopType.Knight      => knightPrefab,
             TroopType.Archer      => archerPrefab,
-            TroopType.Cavalier    => cavalierPrefab,
             TroopType.Golem       => golemPrefab,
             _ => null
         };

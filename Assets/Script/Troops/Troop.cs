@@ -36,7 +36,6 @@ public class Troop : MonoBehaviour
         stateMachine.CreateState("Attack", AttackState);
 
         stateMachine.CreateConnection("Navigate", "Idle", HasReachedDestination);
-        stateMachine.CreateConnection("Guard", "Idle", IsNoThreatNearby);
         stateMachine.CreateConnection("Attack", "Idle", IsNoMoreTargetInRange);
         stateMachine.CreateConnection("Idle", "Guard", IsGettingAttacked);
     }
@@ -170,11 +169,17 @@ public class Troop : MonoBehaviour
 
     private void GuardState()
     {
-        HashSet<Troop> nearingEnemies = blackBoard.GetNearingEnemies();
-
-        if (nearingEnemies.Count > 0)
+        Building buildingTarget = blackBoard.GetBuildingTarget();
+        if (buildingTarget && Vector3.Distance(buildingTarget.transform.position, transform.position) >= blackBoard.GetRange())
         {
-            if (attackRefreshTimer <= 0.0f)
+            agent.SetDestination(blackBoard.GetBuildingTarget().transform.position);
+        }
+        
+        else
+        {
+            HashSet<Troop> nearingEnemies = blackBoard.GetNearingEnemies();
+
+            if (nearingEnemies.Count > 0 && attackRefreshTimer <= 0.0f)
             {
                 if (Vector3.Distance(transform.position, nearingEnemies.FirstOrDefault().transform.position) < blackBoard.GetRange())
                 {

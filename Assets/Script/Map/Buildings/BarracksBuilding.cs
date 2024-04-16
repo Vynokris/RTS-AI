@@ -8,7 +8,7 @@ public class BarracksBuilding : Building
     private readonly Queue<TroopType> troopTrainingQueue = new();
     private float troopTrainingTimer = 0;
 
-    public void AddTroopToTrain(TroopType troopType)
+    public bool AddTroopToTrain(TroopType troopType)
     {
         Faction owningFaction = owningTile.owningFaction;
         ActionCost trainingCost = costStorage.GetTroopCost(troopType);
@@ -16,7 +16,9 @@ public class BarracksBuilding : Building
         {
             troopTrainingQueue.Enqueue(troopType);
             enabled = true;
+            return true;
         }
+        return false;
     }
 
     private void Start()
