@@ -86,8 +86,6 @@ public class Troop : MonoBehaviour
                 if (Vector3.Distance(transform.position, enemy.transform.position) < blackBoard.GetRange())
                 {
                     blackBoard.SetTarget(enemy);
-                    Building target = blackBoard.GetBuildingTarget();
-                    if (target) target.TakeDamage(blackBoard.GetDamage());
                     break;
                 }
             }
@@ -171,7 +169,7 @@ public class Troop : MonoBehaviour
     private void GuardState()
     {
         Building buildingTarget = blackBoard.GetBuildingTarget();
-        if (buildingTarget && Vector3.Distance(buildingTarget.transform.position, transform.position) >= blackBoard.GetRange())
+        if (buildingTarget && Vector3.Distance(buildingTarget.transform.position, transform.position) < blackBoard.GetRange())
         {
             agent.SetDestination(blackBoard.GetBuildingTarget().transform.position);
         }
@@ -241,7 +239,7 @@ public class Troop : MonoBehaviour
 
     private bool HasReachedDestination()
     {
-        return agent.remainingDistance <= 0.1f && !agent.pathPending;
+        return agent.remainingDistance <= 0.4f && !agent.pathPending;
     }
 
     private bool IsNoThreatNearby()

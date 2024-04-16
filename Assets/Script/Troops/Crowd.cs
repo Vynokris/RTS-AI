@@ -43,6 +43,8 @@ public class Crowd
 
     public void SetCrowdTarget(Troop target)
     {
+        coordinator.GetAgent().ResetPath();
+
         foreach (var unit in troops)
         {
             unit.GetBlackBoard().SetTarget(target);
@@ -52,6 +54,8 @@ public class Crowd
 
     public void SetCrowdTarget(Building target)
     {
+        coordinator.GetAgent().ResetPath();
+
         foreach (var unit in troops)
         {
             unit.GetBlackBoard().SetTarget(target);
@@ -65,7 +69,7 @@ public class Crowd
         //{
         //    unit.SetDestination(destination);
         //}
-
+        RepositionCoordinator();
         coordinator.SetCrowdDestination(destination);
     }
 
