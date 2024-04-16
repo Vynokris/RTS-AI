@@ -10,6 +10,9 @@ public class FactionManager : MonoBehaviour
 
     [SerializeField] private int playerCount = 2;
 
+    [SerializeField] private GameObject lost;
+    [SerializeField] private GameObject won;
+
     private Dictionary<uint, Faction> factions = new();
     public static Player playerFaction { get; private set; }
     
@@ -56,6 +59,19 @@ public class FactionManager : MonoBehaviour
             }
             influenceManager.UpdateTroops(troopPosPerFaction);
         }
+    }
+
+    public void RequestGameLost(Faction faction)
+    {
+        Time.timeScale = 0.0f;
+
+        if (faction.id == playerFaction.id)
+        {
+            lost.SetActive(true);
+        }
+
+        else
+            won.SetActive(true);
     }
 
     public Faction TryGetFaction(uint id)

@@ -122,11 +122,21 @@ public class Faction : MonoBehaviour
 
     public bool DestroyBuilding(Tile tile, bool regainBuildResources)
     {
-        if (tile.buildingType is BuildingType.None) return false;
+        if (tile.buildingType is BuildingType.None) 
+            return false;
+        
         ActionCost buildCost = costStorage.GetBuildingCost(tile.buildingType);
         ownedBuildings[tile.buildingType].Remove(tile.building);
         tile.RemoveBuilding();
-        if (regainBuildResources) buildCost.Undo(ref crops, ref lumber, ref stone);
+        
+        if (regainBuildResources) 
+            buildCost.Undo(ref crops, ref lumber, ref stone);
+
+        if (ownedBuildings[BuildingType.Castle].Count == 0)
+        {
+            FindObjectOfType<FactionManager>().RequestGameLost(this);
+        }
+
         return true;
     }
 

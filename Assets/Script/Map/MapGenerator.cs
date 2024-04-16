@@ -44,6 +44,7 @@ public class MapGenerator : MonoBehaviour
         if (meshStorage is null) {
             meshStorage = FindObjectOfType<MeshStorage>();
         }
+        seed = Random.Range(0, int.MaxValue);
         System.Random prng = new System.Random(seed);
         
         // Initialize perlin noise octaves.
